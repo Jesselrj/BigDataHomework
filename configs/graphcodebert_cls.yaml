@@ -1,0 +1,6 @@
+inherits: configs/base.yaml
+experiment_name: graphcodebert_cls
+model_name: microsoft/graphcodebert-base
+checkpoint_dir: outputs/checkpoints/graphcodebert_cls
+result_file: outputs/results/graphcodebert_cls_results.json
+prediction_file: outputs/predictions/graphcodebert_cls_predictions.jsonl

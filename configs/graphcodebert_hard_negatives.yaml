@@ -1,0 +1,5 @@
+inherits: configs/graphcodebert_cls.yaml
+experiment_name: graphcodebert_hard_negatives
+checkpoint_dir: outputs/checkpoints/graphcodebert_hard_negatives
+result_file: outputs/results/graphcodebert_hard_negatives_results.json
+prediction_file: outputs/predictions/graphcodebert_hard_negatives_predictions.jsonl

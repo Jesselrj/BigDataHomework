@@ -1,0 +1,6 @@
+inherits: configs/hybrid_rerank.yaml
+experiment_name: hybrid_rerank_hard
+cross_encoder_checkpoint: outputs/checkpoints/graphcodebert_hard_negatives
+result_file: outputs/results/hybrid_rerank_hard_results.json
+prediction_file: outputs/predictions/hybrid_rerank_hard_predictions.jsonl
+eval_batch_size: 1024

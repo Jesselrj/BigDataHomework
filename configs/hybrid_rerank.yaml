@@ -1,0 +1,11 @@
+inherits: configs/base.yaml
+experiment_name: hybrid_rerank
+dual_encoder_checkpoint: outputs/checkpoints/unixcoder_retrieval
+cross_encoder_checkpoint: outputs/checkpoints/graphcodebert_cls
+top_k: 100
+alpha: 0.4
+beta: 0.6
+eval_batch_size: 1024
+result_file: outputs/results/hybrid_rerank_results.json
+prediction_file: outputs/predictions/hybrid_rerank_predictions.jsonl
+ablation_file: outputs/results/hard_negative_ablation.json

@@ -1,0 +1,6 @@
+inherits: configs/base.yaml
+experiment_name: codebert_cls
+model_name: microsoft/codebert-base
+checkpoint_dir: outputs/checkpoints/codebert_cls
+result_file: outputs/results/codebert_cls_results.json
+prediction_file: outputs/predictions/codebert_cls_predictions.jsonl

@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Reproducible generated data and large artifacts.
+data/raw/
+data/processed/
+outputs/checkpoints/
+outputs/predictions/
+outputs/hf_cache/
+
+# Keep lightweight experiment evidence.
+!outputs/
+!outputs/results/
+!outputs/results/**
+!outputs/logs/
+!outputs/logs/**
+
+# Local/editor files.
+.DS_Store
+*.swp

@@ -1,0 +1,8 @@
+inherits: configs/base.yaml
+experiment_name: unixcoder_retrieval
+model_name: microsoft/unixcoder-base
+pooling: mean
+temperature: 0.05
+checkpoint_dir: outputs/checkpoints/unixcoder_retrieval
+embedding_file: outputs/predictions/unixcoder_test_embeddings.npz
+result_file: outputs/results/unixcoder_retrieval_results.json

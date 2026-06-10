@@ -1,0 +1,10 @@
+{
+  "accuracy": 0.9107291666666667,
+  "precision": 0.9014457340663816,
+  "recall": 0.9222916666666666,
+  "f1": 0.9117495623519719,
+  "auc": 0.9728575086805555,
+  "method": "codebert_cls",
+  "checkpoint": "outputs/checkpoints/codebert_cls",
+  "runtime_seconds": 539.3343379497528
+}

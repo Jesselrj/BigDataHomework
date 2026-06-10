@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+export CUDA_VISIBLE_DEVICES=3
+export HF_ENDPOINT=${HF_ENDPOINT:-https://huggingface.co}
+source "$(dirname "$0")/_common.sh"
+python -m src.train.train_dual_encoder --config configs/unixcoder_retrieval.yaml "$@"

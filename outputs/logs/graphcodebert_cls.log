@@ -1,0 +1,8 @@
+2026-06-10 01:38:46,747 INFO environment={"hostname": "h100", "cwd": "/home/lrj/BIG/semantic-code-reuse", "CUDA_VISIBLE_DEVICES": "3", "HF_ENDPOINT": "https://huggingface.co", "torch_cuda_available": true, "torch_cuda_device_count": 1, "torch_cuda_current_device": 0, "torch_cuda_device_name_0": "NVIDIA A100-SXM-64GB"}
+2026-06-10 01:41:00,828 INFO epoch=0 train_loss=0.686981
+2026-06-10 01:41:03,337 INFO test_metrics={'accuracy': 0.4765625, 'precision': 0.4765625, 'recall': 1.0, 'f1': 0.6455026455026455, 'auc': 0.5141301688279912, 'method': 'graphcodebert_cls', 'checkpoint': 'outputs/checkpoints/graphcodebert_cls', 'runtime_seconds': 3.5690712928771973}
+2026-06-10 02:26:02,308 INFO environment={"hostname": "h100", "cwd": "/home/lrj/BIG/semantic-code-reuse", "CUDA_VISIBLE_DEVICES": "3", "HF_ENDPOINT": "https://huggingface.co", "torch_cuda_available": true, "torch_cuda_device_count": 1, "torch_cuda_current_device": 0, "torch_cuda_device_name_0": "NVIDIA A100-SXM-64GB"}
+2026-06-10 02:28:44,005 INFO epoch=0 train_loss=0.418000
+2026-06-10 02:31:21,654 INFO epoch=1 train_loss=0.183482
+2026-06-10 02:33:59,017 INFO epoch=2 train_loss=0.129414
+2026-06-10 02:35:05,086 INFO test_metrics={'accuracy': 0.9154166666666667, 'precision': 0.9000802568218299, 'recall': 0.9345833333333333, 'f1': 0.9170073589533932, 'auc': 0.9741462239583333, 'method': 'graphcodebert_cls', 'checkpoint': 'outputs/checkpoints/graphcodebert_cls', 'runtime_seconds': 539.3315801620483}

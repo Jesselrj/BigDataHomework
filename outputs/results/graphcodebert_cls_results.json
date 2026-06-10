@@ -1,0 +1,10 @@
+{
+  "accuracy": 0.9154166666666667,
+  "precision": 0.9000802568218299,
+  "recall": 0.9345833333333333,
+  "f1": 0.9170073589533932,
+  "auc": 0.9741462239583333,
+  "method": "graphcodebert_cls",
+  "checkpoint": "outputs/checkpoints/graphcodebert_cls",
+  "runtime_seconds": 539.3315801620483
+}

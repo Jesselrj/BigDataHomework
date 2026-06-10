@@ -1,0 +1,6 @@
+inherits: configs/base.yaml
+experiment_name: tfidf
+token_pattern: code
+ngram_range: [1, 2]
+max_features: 200000
+result_file: outputs/results/tfidf_results.json

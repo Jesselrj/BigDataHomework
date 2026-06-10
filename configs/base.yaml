@@ -1,0 +1,31 @@
+seed: 42
+machine: h100
+project_root: ~/BIG/semantic-code-reuse
+gpu: cuda3
+cuda_visible_devices: "3"
+visible_device_inside_pytorch: cuda:0
+hf_endpoint: https://huggingface.co
+hf_home: outputs/hf_cache
+precision: bf16
+max_length: 512
+num_epochs: 3
+learning_rate: 2.0e-5
+weight_decay: 0.01
+warmup_ratio: 0.1
+gradient_accumulation_steps: 1
+cross_encoder_batch_size: 64
+dual_encoder_batch_size: 64
+eval_batch_size: 128
+num_workers: 2
+paths:
+  train_retrieval: data/processed/train.jsonl
+  valid_retrieval: data/processed/validation.jsonl
+  test_retrieval: data/processed/test.jsonl
+  train_pairs: data/processed/train_pairs.jsonl
+  valid_pairs: data/processed/validation_pairs.jsonl
+  test_pairs: data/processed/test_pairs.jsonl
+  hard_negatives: data/processed/hard_negatives.jsonl
+  logs_dir: outputs/logs
+  checkpoints_dir: outputs/checkpoints
+  predictions_dir: outputs/predictions
+  results_dir: outputs/results

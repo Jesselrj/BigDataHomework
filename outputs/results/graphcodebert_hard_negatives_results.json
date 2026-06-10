@@ -1,0 +1,10 @@
+{
+  "accuracy": 0.8978125,
+  "precision": 0.9517388218594748,
+  "recall": 0.838125,
+  "f1": 0.8913260219341975,
+  "auc": 0.9741706814236111,
+  "method": "graphcodebert_hard_negatives",
+  "checkpoint": "outputs/checkpoints/graphcodebert_hard_negatives",
+  "runtime_seconds": 2286.427217721939
+}

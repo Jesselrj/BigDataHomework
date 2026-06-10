@@ -1,0 +1,9 @@
+2026-06-10 01:42:47,934 INFO environment={"hostname": "h100", "cwd": "/home/lrj/BIG/semantic-code-reuse", "CUDA_VISIBLE_DEVICES": "3", "HF_ENDPOINT": "https://huggingface.co", "torch_cuda_available": true, "torch_cuda_device_count": 1, "torch_cuda_current_device": 0, "torch_cuda_device_name_0": "NVIDIA A100-SXM-64GB"}
+2026-06-10 01:52:34,795 INFO environment={"hostname": "h100", "cwd": "/home/lrj/BIG/semantic-code-reuse", "CUDA_VISIBLE_DEVICES": "3", "HF_ENDPOINT": "https://huggingface.co", "torch_cuda_available": true, "torch_cuda_device_count": 1, "torch_cuda_current_device": 0, "torch_cuda_device_name_0": "NVIDIA A100-SXM-64GB"}
+2026-06-10 01:52:38,008 INFO epoch=0 train_loss=2.747070
+2026-06-10 01:52:39,669 INFO test_metrics={'recall@1': 1.0, 'recall@5': 1.0, 'recall@10': 1.0, 'mrr': 1.0, 'map@r': 1.0, 'num_queries': 128.0, 'method': 'UniXcoder', 'checkpoint': 'outputs/checkpoints/unixcoder_retrieval', 'runtime_seconds': 2.4396860599517822}
+2026-06-10 02:35:07,841 INFO environment={"hostname": "h100", "cwd": "/home/lrj/BIG/semantic-code-reuse", "CUDA_VISIBLE_DEVICES": "3", "HF_ENDPOINT": "https://huggingface.co", "torch_cuda_available": true, "torch_cuda_device_count": 1, "torch_cuda_current_device": 0, "torch_cuda_device_name_0": "NVIDIA A100-SXM-64GB"}
+2026-06-10 02:41:14,095 INFO epoch=0 train_loss=1.089761
+2026-06-10 02:47:16,139 INFO epoch=1 train_loss=0.675188
+2026-06-10 02:53:18,220 INFO epoch=2 train_loss=0.636186
+2026-06-10 02:54:52,400 INFO test_metrics={'recall@1': 0.9976666666666667, 'recall@5': 0.99875, 'recall@10': 0.9991666666666666, 'mrr': 0.9982179793458081, 'map@r': 0.9811297959056334, 'num_queries': 12000.0, 'method': 'UniXcoder', 'checkpoint': 'outputs/checkpoints/unixcoder_retrieval', 'runtime_seconds': 1181.121094942093}
