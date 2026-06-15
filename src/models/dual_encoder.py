@@ -32,12 +32,17 @@ class DualEncoder(nn.Module):
             pooled = (hidden * mask).sum(dim=1) / mask.sum(dim=1).clamp_min(1.0)
         return F.normalize(pooled, p=2, dim=-1)
 
-    def forward(self, query: dict, positive: dict) -> torch.Tensor:
+    def forward(self, query: dict, positive: dict, labels: torch.Tensor | None = None) -> torch.Tensor:
         q = self.encode_batch(query)
         p = self.encode_batch(positive)
         logits = q @ p.T / self.temperature
-        labels = torch.arange(logits.size(0), device=logits.device)
-        return F.cross_entropy(logits, labels)
+        if labels is None:
+            targets = torch.arange(logits.size(0), device=logits.device)
+            return F.cross_entropy(logits, targets)
+        positive_mask = labels[:, None].eq(labels[None, :])
+        numerator = torch.logsumexp(logits.masked_fill(~positive_mask, -torch.inf), dim=1)
+        denominator = torch.logsumexp(logits, dim=1)
+        return -(numerator - denominator).mean()
 
     def save_pretrained(self, path: str) -> None:
         self.encoder.save_pretrained(path)

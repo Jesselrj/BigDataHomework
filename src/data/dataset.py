@@ -51,12 +51,13 @@ class DualEncoderPairDataset(Dataset):
             by_problem[row["problem_id"]].append(row)
         self.pairs = []
         rng = random.Random(seed)
-        for items in by_problem.values():
+        label_to_id = {problem_id: idx for idx, problem_id in enumerate(sorted(by_problem))}
+        for problem_id, items in by_problem.items():
             if len(items) < 2:
                 continue
             for item in items:
                 other = rng.choice([r for r in items if r["id"] != item["id"]])
-                self.pairs.append({"query_code": item["code"], "positive_code": other["code"]})
+                self.pairs.append({"query_code": item["code"], "positive_code": other["code"], "label_id": label_to_id[problem_id]})
         if not self.pairs:
             raise ValueError("Dual encoder training needs at least one positive pair")
 

@@ -46,9 +46,13 @@ def main() -> None:
     for epoch in range(epochs):
         losses = []
         for batch in loader:
-            batch = {outer: {k: v.to(device) for k, v in inner.items()} for outer, inner in batch.items()}
+            batch = {
+                "query": {k: v.to(device) for k, v in batch["query"].items()},
+                "positive": {k: v.to(device) for k, v in batch["positive"].items()},
+                "labels": batch["labels"].to(device),
+            }
             with torch.autocast(device_type="cuda", dtype=torch.bfloat16, enabled=cfg.get("precision") == "bf16" and device.type == "cuda"):
-                loss = model(batch["query"], batch["positive"]) / int(cfg["gradient_accumulation_steps"])
+                loss = model(batch["query"], batch["positive"], batch["labels"]) / int(cfg["gradient_accumulation_steps"])
             loss.backward()
             if (step + 1) % int(cfg["gradient_accumulation_steps"]) == 0:
                 optimizer.step()
