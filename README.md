@@ -91,6 +91,7 @@ bash scripts/run_tfidf.sh
 bash scripts/train_codebert.sh
 bash scripts/train_graphcodebert.sh
 bash scripts/train_unixcoder.sh
+bash scripts/train_unixcoder_label_aware.sh
 bash scripts/run_hybrid_rerank.sh
 bash scripts/train_graphcodebert_hard_negatives.sh
 bash scripts/run_hybrid_rerank_hard.sh
@@ -118,11 +119,12 @@ outputs/results/
 | TF-IDF | 对比方法 | 检索 | 0.2169 | 0.8077 | 0.9140 | 0.9487 | 0.8561 | - |
 | CodeBERT | 对比方法 | 分类 | - | - | - | - | - | 0.9117 |
 | GraphCodeBERT | 对比方法 | 分类 | - | - | - | - | - | 0.9170 |
-| UniXcoder | 本文优化 | 检索 | 0.9117 | 0.9982 | 0.9989 | 0.9992 | 0.9986 | - |
+| UniXcoder | 对比方法 | 检索 | 0.9095 | 0.9977 | 0.9988 | 0.9992 | 0.9982 | - |
+| UniXcoder + Label-aware Loss | 本文优化 | 检索 | 0.9117 | 0.9982 | 0.9989 | 0.9992 | 0.9986 | - |
 | UniXcoder + GraphCodeBERT | 本文方法 | 检索 + 重排序 | 0.9053 | 0.9979 | 0.9989 | 0.9992 | 0.9984 | - |
 | Hybrid + Hard Negatives | 消融实验 | 检索 + 重排序 | 0.8884 | 0.9978 | 0.9983 | 0.9986 | 0.9981 | - |
 
-其中 `UniXcoder + GraphCodeBERT` 是本文专门设计的混合重排序方法，其他模型作为对比方法。`Hybrid + Hard Negatives` 用于观察 hard negative 训练对结果的影响，属于消融实验。
+其中 `UniXcoder + Label-aware Loss` 是在 UniXcoder baseline 上做的训练目标优化：batch 内同一 problem 的样本不再作为负例，而是共同作为正例，从而减少假负例带来的错误惩罚。`UniXcoder + GraphCodeBERT` 是本文专门设计的混合重排序方法。`Hybrid + Hard Negatives` 用于观察 hard negative 训练对结果的影响，属于消融实验。
 
 MAP@R 按 UniXcoder/CodeXGLUE 官方公式计算，即未进入 top-R 的相关样本按 0 计入。当前重排序方法提升了 Recall@1 和 MRR，但 MAP@R 低于 UniXcoder，说明现有融合权重更偏向提升首个正确结果，对 top-R 内整体相关样本排序仍需进一步优化。
 

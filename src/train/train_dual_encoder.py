@@ -25,6 +25,7 @@ def main() -> None:
     cfg = load_yaml(args.config)
     configure_hf_environment(cfg)
     set_seed(int(cfg["seed"]))
+    label_aware_loss = bool(cfg.get("label_aware_loss", False))
     logger = setup_logger(cfg["experiment_name"], cfg["paths"]["logs_dir"])
     env = log_environment(logger)
     if env.get("torch_cuda_device_count") not in (None, 1):
@@ -52,7 +53,8 @@ def main() -> None:
                 "labels": batch["labels"].to(device),
             }
             with torch.autocast(device_type="cuda", dtype=torch.bfloat16, enabled=cfg.get("precision") == "bf16" and device.type == "cuda"):
-                loss = model(batch["query"], batch["positive"], batch["labels"]) / int(cfg["gradient_accumulation_steps"])
+                labels = batch["labels"] if label_aware_loss else None
+                loss = model(batch["query"], batch["positive"], labels) / int(cfg["gradient_accumulation_steps"])
             loss.backward()
             if (step + 1) % int(cfg["gradient_accumulation_steps"]) == 0:
                 optimizer.step()
@@ -72,7 +74,7 @@ def main() -> None:
     vectors = encode_rows(model, tokenizer, rows, device, cfg["max_length"], eval_batch_size)
     scores = (vectors @ vectors.T).numpy()
     metrics = retrieval_metrics(scores, [r["id"] for r in rows], [r["problem_id"] for r in rows], [r["id"] for r in rows], [r["problem_id"] for r in rows])
-    metrics.update({"method": "UniXcoder", "checkpoint": str(checkpoint_dir), "runtime_seconds": time.time() - start_time})
+    metrics.update({"method": cfg["experiment_name"], "checkpoint": str(checkpoint_dir), "runtime_seconds": time.time() - start_time})
     np.savez(cfg["embedding_file"], ids=[r["id"] for r in rows], labels=[r["problem_id"] for r in rows], vectors=vectors.numpy())
     write_json(cfg["result_file"], metrics)
     logger.info("test_metrics=%s", metrics)

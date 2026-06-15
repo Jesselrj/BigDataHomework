@@ -31,7 +31,8 @@ def write_final_table() -> None:
         ("TF-IDF", "Retrieval", "outputs/results/tfidf_results.json", "Lexical baseline"),
         ("CodeBERT", "Classification", "outputs/results/codebert_cls_results.json", "Pair classifier"),
         ("GraphCodeBERT", "Classification", "outputs/results/graphcodebert_cls_results.json", "Pair classifier"),
-        ("UniXcoder", "Retrieval", "outputs/results/unixcoder_retrieval_results.json", "Label-aware dual encoder"),
+        ("UniXcoder", "Retrieval", "outputs/results/unixcoder_retrieval_results.json", "Baseline dual encoder"),
+        ("UniXcoder + Label-aware Loss", "Retrieval", "outputs/results/unixcoder_label_aware_results.json", "Ours: mask same-problem false negatives"),
         ("UniXcoder + GraphCodeBERT", "Retrieval + Rerank", "outputs/results/hybrid_rerank_results.json", "Hybrid method"),
         ("Hybrid + Hard Negatives", "Retrieval + Rerank", "outputs/results/hybrid_rerank_hard_results.json", "Ablation"),
     ]
