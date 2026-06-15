@@ -80,7 +80,7 @@ def retrieval_metrics(
             if is_rel:
                 hits += 1
                 precisions.append(hits / rank)
-        mapr_values.append(float(np.mean(precisions)) if precisions else 0.0)
+        mapr_values.append(float(sum(precisions) / r))
     result: dict[str, float] = {f"recall@{k}": float(np.mean(v)) if v else 0.0 for k, v in recalls.items()}
     result["mrr"] = float(np.mean(mrr_values)) if mrr_values else 0.0
     result["map@r"] = float(np.mean(mapr_values)) if mapr_values else 0.0

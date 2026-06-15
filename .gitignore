@@ -5,9 +5,16 @@ __pycache__/
 # Reproducible generated data and large artifacts.
 data/raw/
 data/processed/
+data/official_processed/
 outputs/checkpoints/
 outputs/predictions/
 outputs/hf_cache/
+outputs/bigclonebench_eval/
+outputs/official_checkpoints/
+outputs/official_logs/
+outputs/official_predictions/
+outputs/official_results/
+outputs/official_unixcoder_paper/
 
 # Keep lightweight experiment evidence.
 !outputs/
