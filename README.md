@@ -121,6 +121,10 @@ outputs/results/
 | UniXcoder + GraphCodeBERT | 本文方法 | 检索 + 重排序 | 0.9816 | 0.9979 | 0.9989 | 0.9992 | 0.9984 | - |
 | Hybrid + Hard Negatives | 消融实验 | 检索 + 重排序 | 0.9794 | 0.9978 | 0.9983 | 0.9986 | 0.9981 | - |
 
+其中 `UniXcoder + GraphCodeBERT` 是本文专门设计的混合重排序方法，其他模型作为对比方法。`Hybrid + Hard Negatives` 用于观察 hard negative 训练对结果的影响，属于消融实验。
+
+本文方法相比 UniXcoder 的指标提升较小，主要是因为 UniXcoder 在 POJ-104 上已经接近性能上限，Recall@1 达到 0.9977，重排序能够纠正的错误样本很少。根据预测结果统计，本文方法虽然改变了部分 query 的排序，但多数只是把一个正确候选换成另一个正确候选，因此 MAP@R 和 Recall 的变化不大。
+
 详细结果见：
 
 ```text
