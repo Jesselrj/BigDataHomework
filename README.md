@@ -4,6 +4,18 @@
 
 项目包含 TF-IDF、CodeBERT、GraphCodeBERT、UniXcoder、混合重排序和 hard negative 实验。
 
+## 我们的工作
+
+本项目的主要工作包括：
+
+- 将 POJ-104 整理为语义代码复用检测任务，支持检索和二分类两种实验设置。
+- 实现 TF-IDF 词法检索基线、CodeBERT/GraphCodeBERT 代码对分类模型和 UniXcoder 双塔检索模型。
+- 设计 UniXcoder 召回 + GraphCodeBERT 重排序的混合方法。
+- 构造 hard negative 样本，并分析其对分类和检索结果的影响。
+- 完成统一的训练、评测、结果汇总和误差分析流程。
+
+POJ-104 数据集和 CodeBERT、GraphCodeBERT、UniXcoder 等预训练模型来自公开资源，本仓库的贡献是围绕语义代码复用检测任务进行实验设计、方法实现和结果分析。
+
 ## 文件结构
 
 ```text
