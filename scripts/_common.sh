@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
 export HF_ENDPOINT=${HF_ENDPOINT:-https://huggingface.co}
 PROJECT_ROOT="${PROJECT_ROOT:-$HOME/BIG/semantic-code-reuse}"
 ENV_PREFIX="${SEMANTIC_CODE_REUSE_ENV:-$HOME/envs/semantic-code-reuse}"

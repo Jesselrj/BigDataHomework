@@ -40,7 +40,7 @@ def main() -> None:
     logger = setup_logger(cfg["experiment_name"], cfg["paths"]["logs_dir"])
     env = log_environment(logger)
     if env.get("torch_cuda_device_count") not in (None, 1):
-        raise RuntimeError("Expected exactly one visible GPU after CUDA_VISIBLE_DEVICES=3")
+        raise RuntimeError("Expected exactly one visible GPU after setting CUDA_VISIBLE_DEVICES")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     tokenizer = load_pair_tokenizer(cfg["model_name"])
     model = CrossEncoder(cfg["model_name"]).to(device)
