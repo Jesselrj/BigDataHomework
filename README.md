@@ -125,6 +125,34 @@ outputs/results/
 
 本文方法相比 UniXcoder 的指标提升较小，主要是因为 UniXcoder 在 POJ-104 上已经接近性能上限，Recall@1 达到 0.9977，重排序能够纠正的错误样本很少。根据预测结果统计，本文方法虽然改变了部分 query 的排序，但多数只是把一个正确候选换成另一个正确候选，因此 MAP@R 和 Recall 的变化不大。
 
+## 本地展示前端
+
+仓库提供了一个轻量级本地展示前端，可用于小组汇报时展示实验结果、指标对比、困难负例消融和错误分析。前端主体只依赖 Python 标准库，展示已有结果时不需要 GPU，也不需要本地模型权重。
+
+```bash
+python frontend/app.py --port 8501
+```
+
+启动后在浏览器打开：
+
+```text
+http://127.0.0.1:8501
+```
+
+也可以直接打开静态预览文件：
+
+```text
+frontend/preview.html
+```
+
+如果需要使用代码对推理演示，请将对应模型文件放在 `outputs/checkpoints/` 下。例如 GraphCodeBERT 分类模型应放在：
+
+```text
+outputs/checkpoints/graphcodebert_cls/
+```
+
+其中应包含 `config.json` 和 `model.safetensors` 等文件。
+
 详细结果见：
 
 ```text
