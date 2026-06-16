@@ -215,8 +215,12 @@ main {
   z-index: 1;
   display: block;
   margin: 16px 0 8px;
-  font-size: clamp(22px, 2.3vw, 31px);
-  line-height: 1.06;
+  max-width: 100%;
+  font-size: clamp(18px, 2vw, 31px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .accent-blue { border-top-color: var(--blue); }
@@ -955,7 +959,7 @@ textarea {
     </section>
   </main>
 
-  <script>window.__SUMMARY__ = {"project_root": "/Users/qinsihan_macbookair/Desktop/Projects/BigDataHomework", "results_dir": "/Users/qinsihan_macbookair/Desktop/Projects/BigDataHomework/outputs/results", "checkpoint_root": "/Users/qinsihan_macbookair/Desktop/Projects/BigDataHomework/outputs/checkpoints", "methods": [{"id": "tfidf", "name": "TF-IDF", "task": "语义检索", "file": "tfidf_results.json", "notes": "词法相似度基线方法", "metrics": {"recall@1": 0.8076666666666666, "recall@5": 0.914, "recall@10": 0.9486666666666667, "mrr": 0.8560613059081037, "map@r": 0.5387853808423051, "num_queries": 12000.0, "method": "TF-IDF"}}, {"id": "codebert", "name": "CodeBERT", "task": "代码对分类", "file": "codebert_cls_results.json", "notes": "预训练代码模型二分类器", "checkpoint": "codebert_cls", "metrics": {"accuracy": 0.9107291666666667, "precision": 0.9014457340663816, "recall": 0.9222916666666666, "f1": 0.9117495623519719, "auc": 0.9728575086805555, "method": "codebert_cls", "checkpoint": "outputs/checkpoints/codebert_cls", "runtime_seconds": 539.3343379497528}}, {"id": "graphcodebert", "name": "GraphCodeBERT", "task": "代码对分类", "file": "graphcodebert_cls_results.json", "notes": "代码对分类器，并作为混合方法中的重排序模型", "checkpoint": "graphcodebert_cls", "metrics": {"accuracy": 0.9154166666666667, "precision": 0.9000802568218299, "recall": 0.9345833333333333, "f1": 0.9170073589533932, "auc": 0.9741462239583333, "method": "graphcodebert_cls", "checkpoint": "outputs/checkpoints/graphcodebert_cls", "runtime_seconds": 539.3315801620483}}, {"id": "unixcoder", "name": "UniXcoder", "task": "语义检索", "file": "unixcoder_retrieval_results.json", "notes": "双塔语义检索模型", "checkpoint": "unixcoder_retrieval", "metrics": {"recall@1": 0.9976666666666667, "recall@5": 0.99875, "recall@10": 0.9991666666666666, "mrr": 0.9982179793458081, "map@r": 0.9811297959056334, "num_queries": 12000.0, "method": "UniXcoder", "checkpoint": "outputs/checkpoints/unixcoder_retrieval", "runtime_seconds": 1181.121094942093}}, {"id": "hybrid", "name": "UniXcoder + GraphCodeBERT", "task": "检索与重排序", "file": "hybrid_rerank_results.json", "notes": "先召回候选，再进行代码对级别重排序", "metrics": {"recall@1": 0.9979166666666667, "recall@5": 0.9989166666666667, "recall@10": 0.9991666666666666, "mrr": 0.9983925811010229, "map@r": 0.9815569907277234, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}}, {"id": "hybrid_hard", "name": "Hybrid + Hard Negatives", "task": "困难负例消融", "file": "hybrid_rerank_hard_results.json", "notes": "加入随机、词法相似、长度结构相似负例后的消融结果", "metrics": {"recall@1": 0.9978333333333333, "recall@5": 0.9983333333333333, "recall@10": 0.9985833333333334, "mrr": 0.9980943753864144, "map@r": 0.97937313046968, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}}], "best_retrieval": {"id": "hybrid", "name": "UniXcoder + GraphCodeBERT", "task": "检索与重排序", "file": "hybrid_rerank_results.json", "notes": "先召回候选，再进行代码对级别重排序", "metrics": {"recall@1": 0.9979166666666667, "recall@5": 0.9989166666666667, "recall@10": 0.9991666666666666, "mrr": 0.9983925811010229, "map@r": 0.9815569907277234, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}}, "best_classifier": {"id": "graphcodebert", "name": "GraphCodeBERT", "task": "代码对分类", "file": "graphcodebert_cls_results.json", "notes": "代码对分类器，并作为混合方法中的重排序模型", "checkpoint": "graphcodebert_cls", "metrics": {"accuracy": 0.9154166666666667, "precision": 0.9000802568218299, "recall": 0.9345833333333333, "f1": 0.9170073589533932, "auc": 0.9741462239583333, "method": "graphcodebert_cls", "checkpoint": "outputs/checkpoints/graphcodebert_cls", "runtime_seconds": 539.3315801620483}}, "ablation": {"without_hard_negatives": {"recall@1": 0.9979166666666667, "recall@5": 0.9989166666666667, "recall@10": 0.9991666666666666, "mrr": 0.9983925811010229, "map@r": 0.9815569907277234, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}, "with_hard_negatives": {"recall@1": 0.9978333333333333, "recall@5": 0.9983333333333333, "recall@10": 0.9985833333333334, "mrr": 0.9980943753864144, "map@r": 0.97937313046968, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}, "delta_with_minus_without": {"map@r": -0.002183860258043402, "recall@1": -8.333333333332416e-05, "recall@5": -0.0005833333333333801, "recall@10": -0.0005833333333332691, "mrr": -0.00029820571460847933}}, "error_analysis": "## 7. 错误分析\n\n错误分析脚本对混合方法预测结果进行了样本级检查，覆盖了六类典型情况。\n\n第一类是高词法相似但语义不同的代码对。例如 `problem_4` 与 `problem_52`、`problem_10` 与 `problem_15` 中存在 TF-IDF 分数接近 1.0 的代码对，但它们实际解决不同问题。这说明仅依赖词法相似性容易把结构模板相似、变量和循环形式相近的程序误判为语义等价。\n\n第二类是低词法相似但语义相同的代码对。例如 `problem_100` 中样本 `test_9553` 与 `test_9811` 的 token Jaccard 仅为 0.1518，但二者属于同一问题。这类样本说明语义等价代码可以采用完全不同的变量组织、分支写法和实现风格，词法方法难以稳定识别。\n\n第三类是超长代码被截断的情况。部分 `problem_100` 样本 token 数超过 2,000，而模型最大长度为 512。长代码截断可能导致模型无法看到完整逻辑，尤其是当关键判断或输出逻辑出现在后半部分时，会影响分类和重排序。\n\n第四类是同一问题下不同算法策略的实现。例如同一题目中既可能出现通用算法实现，也可能出现针对输入范围或特定样例的特殊写法。这类样本在 token overlap 上很低，但语义标签相同，是 Type-4 克隆检测的核心难点。\n\n第五类是 TF-IDF 可能成功但神经模型失败的样本。错误分析中发现 GraphCodeBERT 对若干高 token Jaccard 的正例给出较低分数，例如 `problem_86` 中某正例对 token Jaccard 为 0.7609，但 GraphCodeBERT 分数仅为 0.1865。这说明神经模型并非总是优于词法方法，在部分高词面重合正例上也可能出现 false negative。\n\n第六类是神经模型成功但 TF-IDF 失败的样本。例如 `problem_81` 中多个 query 的混合模型 Top-1 结果正确，而 TF-IDF Top-1 检索到了 `problem_82`、`problem_84` 或 `problem_85` 的代码。这说明预训练语义模型能够在一定程度上摆脱表层 token 相似性的限制。\n\n总体来看，错误分析证明两阶段混合方法在大多数语义检索场景下表现稳定，但仍受限于输入长度、训练负例构造方式和 Cross-Encoder 对部分边界样本的判断能力。", "final_table": "| Method | Task | MAP@R | Recall@1 | Recall@5 | Recall@10 | MRR | F1 | Notes |\n|---|---|---:|---:|---:|---:|---:|---:|---|\n| TF-IDF | Retrieval | 0.5388 | 0.8077 | 0.9140 | 0.9487 | 0.8561 | - | Lexical baseline |\n| CodeBERT | Classification | - | - | - | - | - | 0.9117 | Pair classifier |\n| GraphCodeBERT | Classification | - | - | - | - | - | 0.9170 | Pair classifier |\n| UniXcoder | Retrieval | 0.9811 | 0.9977 | 0.9988 | 0.9992 | 0.9982 | - | Dual encoder |\n| UniXcoder + GraphCodeBERT | Retrieval + Rerank | 0.9816 | 0.9979 | 0.9989 | 0.9992 | 0.9984 | - | Hybrid method |\n| Hybrid + Hard Negatives | Retrieval + Rerank | 0.9794 | 0.9978 | 0.9983 | 0.9986 | 0.9981 | - | Ablation |\n", "checkpoints": [{"name": "CodeBERT", "checkpoint": "codebert_cls", "local_path": "/Users/qinsihan_macbookair/Desktop/Projects/BigDataHomework/outputs/checkpoints/codebert_cls", "exists": true, "looks_ready": false, "files": ["config.json", "merges.txt", "special_tokens_map.json", "tokenizer.json", "tokenizer_config.json", "vocab.json"]}, {"name": "GraphCodeBERT", "checkpoint": "graphcodebert_cls", "local_path": "/Users/qinsihan_macbookair/Desktop/Projects/BigDataHomework/outputs/checkpoints/graphcodebert_cls", "exists": true, "looks_ready": false, "files": ["config.json", "merges.txt", "special_tokens_map.json", "tokenizer.json", "tokenizer_config.json", "vocab.json"]}, {"name": "UniXcoder", "checkpoint": "unixcoder_retrieval", "local_path": "/Users/qinsihan_macbookair/Desktop/Projects/BigDataHomework/outputs/checkpoints/unixcoder_retrieval", "exists": true, "looks_ready": false, "files": ["config.json", "merges.txt", "special_tokens_map.json", "tokenizer.json", "tokenizer_config.json", "vocab.json"]}]};</script>
+  <script>window.__SUMMARY__ = {"project_root": "F:\\桌面\\大数据\\大作业\\BigDataHomework", "results_dir": "F:\\桌面\\大数据\\大作业\\BigDataHomework\\outputs\\results", "checkpoint_root": "F:\\桌面\\大数据\\大作业\\BigDataHomework\\outputs\\checkpoints", "methods": [{"id": "tfidf", "name": "TF-IDF", "task": "语义检索", "file": "tfidf_results.json", "notes": "词法相似度基线方法", "metrics": {"recall@1": 0.8076666666666666, "recall@5": 0.914, "recall@10": 0.9486666666666667, "mrr": 0.8560613059081037, "map@r": 0.21688534237171136, "num_queries": 12000.0, "method": "TF-IDF"}}, {"id": "codebert", "name": "CodeBERT", "task": "代码对分类", "file": "codebert_cls_results.json", "notes": "预训练代码模型二分类器", "checkpoint": "codebert_cls", "metrics": {"accuracy": 0.9107291666666667, "precision": 0.9014457340663816, "recall": 0.9222916666666666, "f1": 0.9117495623519719, "auc": 0.9728575086805555, "method": "codebert_cls", "checkpoint": "outputs/checkpoints/codebert_cls", "runtime_seconds": 539.3343379497528}}, {"id": "graphcodebert", "name": "GraphCodeBERT", "task": "代码对分类", "file": "graphcodebert_cls_results.json", "notes": "代码对分类器，并作为混合方法中的重排序模型", "checkpoint": "graphcodebert_cls", "metrics": {"accuracy": 0.9154166666666667, "precision": 0.9000802568218299, "recall": 0.9345833333333333, "f1": 0.9170073589533932, "auc": 0.9741462239583333, "method": "graphcodebert_cls", "checkpoint": "outputs/checkpoints/graphcodebert_cls", "runtime_seconds": 539.3315801620483}}, {"id": "unixcoder", "name": "UniXcoder", "task": "语义检索", "file": "unixcoder_retrieval_results.json", "notes": "双塔语义检索模型", "checkpoint": "unixcoder_retrieval", "metrics": {"recall@1": 0.9975833333333334, "recall@5": 0.9988333333333334, "recall@10": 0.99925, "mrr": 0.9982039599004038, "map@r": 0.9098223936303266, "num_queries": 12000.0, "method": "unixcoder_retrieval", "checkpoint": "outputs/checkpoints/unixcoder_retrieval", "runtime_seconds": 952.658403635025}}, {"id": "hybrid", "name": "UniXcoder + GraphCodeBERT", "task": "检索与重排序", "file": "hybrid_rerank_results.json", "notes": "先召回候选，再进行代码对级别重排序", "metrics": {"recall@1": 0.9979166666666667, "recall@5": 0.9989166666666667, "recall@10": 0.9991666666666666, "mrr": 0.9983925811010229, "map@r": 0.9052507356470918, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}}, {"id": "hybrid_hard", "name": "Hybrid + Hard Negatives", "task": "困难负例消融", "file": "hybrid_rerank_hard_results.json", "notes": "加入随机、词法相似、长度结构相似负例后的消融结果", "metrics": {"recall@1": 0.9978333333333333, "recall@5": 0.9983333333333333, "recall@10": 0.9985833333333334, "mrr": 0.9980943753864144, "map@r": 0.888414078557124, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}}], "best_retrieval": {"id": "unixcoder", "name": "UniXcoder", "task": "语义检索", "file": "unixcoder_retrieval_results.json", "notes": "双塔语义检索模型", "checkpoint": "unixcoder_retrieval", "metrics": {"recall@1": 0.9975833333333334, "recall@5": 0.9988333333333334, "recall@10": 0.99925, "mrr": 0.9982039599004038, "map@r": 0.9098223936303266, "num_queries": 12000.0, "method": "unixcoder_retrieval", "checkpoint": "outputs/checkpoints/unixcoder_retrieval", "runtime_seconds": 952.658403635025}}, "best_classifier": {"id": "graphcodebert", "name": "GraphCodeBERT", "task": "代码对分类", "file": "graphcodebert_cls_results.json", "notes": "代码对分类器，并作为混合方法中的重排序模型", "checkpoint": "graphcodebert_cls", "metrics": {"accuracy": 0.9154166666666667, "precision": 0.9000802568218299, "recall": 0.9345833333333333, "f1": 0.9170073589533932, "auc": 0.9741462239583333, "method": "graphcodebert_cls", "checkpoint": "outputs/checkpoints/graphcodebert_cls", "runtime_seconds": 539.3315801620483}}, "ablation": {"without_hard_negatives": {"recall@1": 0.9979166666666667, "recall@5": 0.9989166666666667, "recall@10": 0.9991666666666666, "mrr": 0.9983925811010229, "map@r": 0.9052507356470918, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}, "with_hard_negatives": {"recall@1": 0.9978333333333333, "recall@5": 0.9983333333333333, "recall@10": 0.9985833333333334, "mrr": 0.9980943753864144, "map@r": 0.888414078557124, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}, "delta_with_minus_without": {"map@r": -0.016836657089967844, "recall@1": -8.333333333332416e-05, "recall@5": -0.0005833333333333801, "recall@10": -0.0005833333333332691, "mrr": -0.00029820571460847933}}, "error_analysis": "## 7. 错误分析\n\n错误分析脚本对混合方法预测结果进行了样本级检查，覆盖了六类典型情况。\n\n第一类是高词法相似但语义不同的代码对。例如 `problem_4` 与 `problem_52`、`problem_10` 与 `problem_15` 中存在 TF-IDF 分数接近 1.0 的代码对，但它们实际解决不同问题。这说明仅依赖词法相似性容易把结构模板相似、变量和循环形式相近的程序误判为语义等价。\n\n第二类是低词法相似但语义相同的代码对。例如 `problem_100` 中样本 `test_9553` 与 `test_9811` 的 token Jaccard 仅为 0.1518，但二者属于同一问题。这类样本说明语义等价代码可以采用完全不同的变量组织、分支写法和实现风格，词法方法难以稳定识别。\n\n第三类是超长代码被截断的情况。部分 `problem_100` 样本 token 数超过 2,000，而模型最大长度为 512。长代码截断可能导致模型无法看到完整逻辑，尤其是当关键判断或输出逻辑出现在后半部分时，会影响分类和重排序。\n\n第四类是同一问题下不同算法策略的实现。例如同一题目中既可能出现通用算法实现，也可能出现针对输入范围或特定样例的特殊写法。这类样本在 token overlap 上很低，但语义标签相同，是 Type-4 克隆检测的核心难点。\n\n第五类是 TF-IDF 可能成功但神经模型失败的样本。错误分析中发现 GraphCodeBERT 对若干高 token Jaccard 的正例给出较低分数，例如 `problem_86` 中某正例对 token Jaccard 为 0.7609，但 GraphCodeBERT 分数仅为 0.1865。这说明神经模型并非总是优于词法方法，在部分高词面重合正例上也可能出现 false negative。\n\n第六类是神经模型成功但 TF-IDF 失败的样本。例如 `problem_81` 中多个 query 的混合模型 Top-1 结果正确，而 TF-IDF Top-1 检索到了 `problem_82`、`problem_84` 或 `problem_85` 的代码。这说明预训练语义模型能够在一定程度上摆脱表层 token 相似性的限制。\n\n总体来看，错误分析证明两阶段混合方法在大多数语义检索场景下表现稳定，但仍受限于输入长度、训练负例构造方式和 Cross-Encoder 对部分边界样本的判断能力。", "final_table": "| Method | Task | MAP@R | Recall@1 | Recall@5 | Recall@10 | MRR | F1 | Notes |\n|---|---|---:|---:|---:|---:|---:|---:|---|\n| TF-IDF | Retrieval | 0.2169 | 0.8077 | 0.9140 | 0.9487 | 0.8561 | - | Lexical baseline |\n| CodeBERT | Classification | - | - | - | - | - | 0.9117 | Pair classifier |\n| GraphCodeBERT | Classification | - | - | - | - | - | 0.9170 | Pair classifier |\n| UniXcoder | Retrieval | 0.9098 | 0.9976 | 0.9988 | 0.9993 | 0.9982 | - | Local baseline dual encoder |\n| UniXcoder + Label-aware Loss | Retrieval | 0.9117 | 0.9982 | 0.9989 | 0.9992 | 0.9986 | - | Ours: mask same-problem false negatives |\n| UniXcoder + GraphCodeBERT | Retrieval + Rerank | 0.9053 | 0.9979 | 0.9989 | 0.9992 | 0.9984 | - | Hybrid method |\n| Hybrid + Hard Negatives | Retrieval + Rerank | 0.8884 | 0.9978 | 0.9983 | 0.9986 | 0.9981 | - | Ablation |\n| UniXcoder (paper) | POJ-104 / BCB | 0.9052 | - | - | - | - | 0.9520 | Paper metrics: BCB R=0.9290, P=0.9760 |\n| UniXcoder + Label-aware Loss (paper POJ setting) | POJ-104 | 0.8931 | 0.9959 | 0.9984 | 0.9989 | 0.9969 | - | Ours, POJ train only |\n| UniXcoder + Label-aware Loss (POJ+BCB train) | POJ-104 / BCB | 0.8925 | 0.9972 | 0.9985 | 0.9988 | 0.9978 | 0.7971 | Ours; BCB validation-calibrated threshold, fixed-threshold F1=0.2406 |\n", "checkpoints": [{"name": "CodeBERT", "checkpoint": "codebert_cls", "local_path": "F:\\桌面\\大数据\\大作业\\BigDataHomework\\outputs\\checkpoints\\codebert_cls", "exists": false, "looks_ready": false, "files": []}, {"name": "GraphCodeBERT", "checkpoint": "graphcodebert_cls", "local_path": "F:\\桌面\\大数据\\大作业\\BigDataHomework\\outputs\\checkpoints\\graphcodebert_cls", "exists": false, "looks_ready": false, "files": []}, {"name": "GraphCodeBERT + Hard Negatives", "checkpoint": "graphcodebert_hard_negatives", "local_path": "F:\\桌面\\大数据\\大作业\\BigDataHomework\\outputs\\checkpoints\\graphcodebert_hard_negatives", "exists": false, "looks_ready": false, "files": []}, {"name": "UniXcoder", "checkpoint": "unixcoder_retrieval", "local_path": "F:\\桌面\\大数据\\大作业\\BigDataHomework\\outputs\\checkpoints\\unixcoder_retrieval", "exists": false, "looks_ready": false, "files": []}]};</script>
   <script>
 const state = { summary: null };
 
@@ -970,6 +974,26 @@ const metricValue = (method) => {
   if (typeof metrics["map@r"] === "number") return { label: "MAP@R", value: metrics["map@r"] };
   if (typeof metrics.f1 === "number") return { label: "F1", value: metrics.f1 };
   return { label: "指标", value: null };
+};
+
+const hasLiveBackend = () => window.location.protocol === "http:" || window.location.protocol === "https:";
+
+const backendBootHint = "请使用 `python frontend\\app.py --port 8501` 启动本地服务，并在浏览器打开 `http://127.0.0.1:8501`。";
+
+const checkpointById = (modelId) => {
+  if (!state.summary?.checkpoints) return null;
+  return state.summary.checkpoints.find((item) => item.checkpoint === modelId) || null;
+};
+
+const inferErrorText = (response, data) => {
+  if (data?.error || data?.hint) {
+    return `${data.error || "推理失败。"}
+${data.hint || ""}`.trim();
+  }
+  if (!response.ok) {
+    return `推理接口返回错误（HTTP ${response.status}）。`;
+  }
+  return "推理失败，请稍后重试。";
 };
 
 const ERROR_SUMMARY = [
@@ -1180,6 +1204,18 @@ const renderErrors = (summary) => {
 const runInfer = async () => {
   const button = document.getElementById("runInfer");
   const result = document.getElementById("inferResult");
+  const modelId = document.getElementById("modelSelect").value;
+  const checkpoint = checkpointById(modelId);
+  if (!hasLiveBackend()) {
+    result.textContent = `当前打开的是静态预览页面，无法调用本地推理接口。
+${backendBootHint}`;
+    return;
+  }
+  if (checkpoint && !checkpoint.looks_ready) {
+    result.textContent = `当前模型尚未同步到本地：${checkpoint.local_path}
+请补齐 config.json 和模型权重文件（model.safetensors 或 pytorch_model.bin）后再运行推理。`;
+    return;
+  }
   button.disabled = true;
   result.textContent = "模型加载中，首次推理可能会慢一些。";
   try {
@@ -1187,19 +1223,27 @@ const runInfer = async () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: document.getElementById("modelSelect").value,
+        model: modelId,
         code1: document.getElementById("code1").value,
         code2: document.getElementById("code2").value
       })
     });
-    const data = await response.json();
-    if (!data.ok) {
-      result.textContent = `${data.error}\n${data.hint || ""}`.trim();
+    let data = null;
+    try {
+      data = await response.json();
+    } catch (error) {
+      data = null;
+    }
+    if (!response.ok || !data?.ok) {
+      result.textContent = inferErrorText(response, data);
       return;
     }
     result.textContent = `预测结果：${data.label}\n语义等价概率：${data.semantic_equivalence_score.toFixed(4)}\n运行设备：${data.device}\n模型路径：${data.checkpoint}`;
   } catch (error) {
-    result.textContent = String(error);
+    const message = error instanceof Error ? error.message : String(error);
+    result.textContent = `无法连接推理接口。
+${backendBootHint}
+原始错误：${message}`;
   } finally {
     button.disabled = false;
   }
