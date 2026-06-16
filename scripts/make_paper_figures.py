@@ -1,306 +1,234 @@
 from __future__ import annotations
 
 import json
-import math
 from pathlib import Path
-from xml.sax.saxutils import escape
+
+import matplotlib
+
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "outputs" / "results"
 FIGURES = ROOT / "outputs" / "figures"
 
-COLORS = {
-    "ink": "#18212f",
-    "muted": "#657184",
-    "line": "#dce4ec",
-    "grid": "#edf2f5",
-    "green": "#147765",
-    "blue": "#285fae",
-    "red": "#b64e43",
-    "gold": "#a66f12",
-    "violet": "#6554b5",
-    "panel": "#f8fafb",
-}
-
 METHODS = [
-    ("TF-IDF", "tfidf_results.json", COLORS["gold"]),
-    ("UniXcoder", "unixcoder_retrieval_results.json", COLORS["blue"]),
-    ("Label-aware", "unixcoder_label_aware_results.json", COLORS["green"]),
-    ("SupCon CE", "unixcoder_supcon_ce_k2_w02_results.json", COLORS["violet"]),
+    ("TF-IDF", "tfidf_results.json", "#b07a16"),
+    ("UniXcoder", "unixcoder_retrieval_results.json", "#2f63ad"),
+    ("Label-aware", "unixcoder_label_aware_results.json", "#1b7f6d"),
+    ("SupCon CE", "unixcoder_supcon_ce_k2_w02_results.json", "#6a56b8"),
 ]
 
 METRICS = [
     ("map@r", "MAP@R"),
     ("recall@1", "R@1"),
     ("recall@5", "R@5"),
-    ("recall@10", "R@10"),
     ("mrr", "MRR"),
 ]
+
+
+def set_cvpr_style() -> None:
+    plt.rcParams.update(
+        {
+            "font.family": "serif",
+            "font.serif": ["DejaVu Serif", "Times New Roman", "Times"],
+            "font.size": 7,
+            "axes.titlesize": 8,
+            "axes.labelsize": 8,
+            "xtick.labelsize": 7,
+            "ytick.labelsize": 7,
+            "legend.fontsize": 7,
+            "figure.titlesize": 10,
+            "axes.linewidth": 0.7,
+            "xtick.major.width": 0.7,
+            "ytick.major.width": 0.7,
+            "pdf.fonttype": 42,
+            "ps.fonttype": 42,
+            "savefig.dpi": 300,
+            "savefig.bbox": "tight",
+            "savefig.pad_inches": 0.02,
+        }
+    )
 
 
 def load_json(name: str) -> dict:
     return json.loads((RESULTS / name).read_text(encoding="utf-8"))
 
 
-def method_rows() -> list[dict]:
+def load_methods() -> list[dict]:
     rows = []
     for label, filename, color in METHODS:
-        metrics = load_json(filename)
-        rows.append({"label": label, "color": color, "metrics": metrics})
+        rows.append({"label": label, "metrics": load_json(filename), "color": color})
     return rows
 
 
-def tag(name: str, attrs: dict | None = None, body: str | None = None) -> str:
-    attrs = attrs or {}
-    attr = " ".join(f'{key}="{escape(str(value))}"' for key, value in attrs.items() if value is not None)
-    if body is None:
-        return f"<{name} {attr}/>" if attr else f"<{name}/>"
-    return f"<{name} {attr}>{body}</{name}>" if attr else f"<{name}>{body}</{name}>"
-
-
-def text(x: float, y: float, value: str, size: int = 16, weight: int = 400, fill: str = COLORS["ink"], anchor: str = "start") -> str:
-    return tag(
-        "text",
-        {
-            "x": round(x, 2),
-            "y": round(y, 2),
-            "font-size": size,
-            "font-weight": weight,
-            "fill": fill,
-            "text-anchor": anchor,
-            "font-family": "Inter, Arial, sans-serif",
-        },
-        escape(value),
-    )
-
-
-def rect(x: float, y: float, w: float, h: float, fill: str, stroke: str | None = None, radius: int = 0, opacity: float | None = None) -> str:
-    return tag(
-        "rect",
-        {
-            "x": round(x, 2),
-            "y": round(y, 2),
-            "width": round(w, 2),
-            "height": round(h, 2),
-            "rx": radius,
-            "fill": fill,
-            "stroke": stroke,
-            "opacity": opacity,
-        },
-    )
-
-
-def line(x1: float, y1: float, x2: float, y2: float, stroke: str = COLORS["line"], width: float = 1, dash: str | None = None) -> str:
-    return tag(
-        "line",
-        {
-            "x1": round(x1, 2),
-            "y1": round(y1, 2),
-            "x2": round(x2, 2),
-            "y2": round(y2, 2),
-            "stroke": stroke,
-            "stroke-width": width,
-            "stroke-dasharray": dash,
-        },
-    )
-
-
-def path(d: str, fill: str = "none", stroke: str = COLORS["ink"], width: float = 2) -> str:
-    return tag("path", {"d": d, "fill": fill, "stroke": stroke, "stroke-width": width, "stroke-linecap": "round", "stroke-linejoin": "round"})
-
-
-def svg(width: int, height: int, body: str) -> str:
-    return "\n".join(
-        [
-            f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
-            tag("rect", {"width": width, "height": height, "fill": "#ffffff"}),
-            body,
-            "</svg>",
-            "",
-        ]
-    )
-
-
-def write_svg(name: str, width: int, height: int, body: str) -> None:
+def save_figure(fig: plt.Figure, stem: str) -> None:
     FIGURES.mkdir(parents=True, exist_ok=True)
-    (FIGURES / name).write_text(svg(width, height, body), encoding="utf-8")
+    fig.savefig(FIGURES / f"{stem}.png")
+    fig.savefig(FIGURES / f"{stem}.pdf")
+    plt.close(fig)
 
 
-def title_block(title: str, subtitle: str) -> str:
-    return text(52, 52, title, 28, 800) + text(52, 82, subtitle, 14, 500, COLORS["muted"])
-
-
-def figure_metric_bars(rows: list[dict]) -> None:
-    width, height = 1240, 720
-    left, right, top, bottom = 120, 50, 145, 105
-    chart_w = width - left - right
-    chart_h = height - top - bottom
-    parts = [title_block("Retrieval performance on POJ-104", "MAP@R is the primary retrieval metric; all bars use the same 0-1 scale.")]
-    for tick in [0, 0.25, 0.5, 0.75, 1.0]:
-        y = top + chart_h * (1 - tick)
-        parts.append(line(left, y, width - right, y, COLORS["grid"]))
-        parts.append(text(left - 14, y + 5, f"{tick:.2f}", 12, 500, COLORS["muted"], "end"))
-    group_w = chart_w / len(METRICS)
-    bar_w = 34
-    for m_idx, (key, label) in enumerate(METRICS):
-        gx = left + m_idx * group_w
-        parts.append(text(gx + group_w / 2, height - 64, label, 15, 800, COLORS["ink"], "middle"))
-        for r_idx, row in enumerate(rows):
-            value = row["metrics"][key]
-            x = gx + group_w / 2 - (len(rows) * bar_w + (len(rows) - 1) * 8) / 2 + r_idx * (bar_w + 8)
-            h = value * chart_h
-            y = top + chart_h - h
-            parts.append(rect(x, y, bar_w, h, row["color"], radius=5))
-            if key == "map@r":
-                parts.append(text(x + bar_w / 2, y - 8, f"{value:.3f}", 11, 700, COLORS["muted"], "middle"))
-    legend_x = width - right - 520
-    for idx, row in enumerate(rows):
-        x = legend_x + idx * 130
-        parts.append(rect(x, 105, 14, 14, row["color"], radius=3))
-        parts.append(text(x + 22, 117, row["label"], 13, 700))
-    parts.append(line(left, top + chart_h, width - right, top + chart_h, COLORS["line"], 1.4))
-    write_svg("fig1_retrieval_metrics.svg", width, height, "\n".join(parts))
-
-
-def figure_metric_matrix(rows: list[dict]) -> None:
-    width, height = 1160, 620
-    x0, y0 = 78, 145
-    cell_w, label_w, cell_h = 152, 220, 72
-    parts = [title_block("Metric matrix", "Darker cells indicate stronger relative performance within each metric column.")]
-    max_by_key = {key: max(row["metrics"][key] for row in rows) for key, _ in METRICS}
-    min_by_key = {key: min(row["metrics"][key] for row in rows) for key, _ in METRICS}
-    parts.append(rect(x0, y0, label_w + cell_w * len(METRICS), cell_h * (len(rows) + 1), "#ffffff", COLORS["line"], 10))
-    parts.append(rect(x0, y0, label_w + cell_w * len(METRICS), cell_h, COLORS["panel"], radius=10))
-    parts.append(text(x0 + 20, y0 + 45, "Method", 14, 800))
-    for idx, (_, label) in enumerate(METRICS):
-        parts.append(text(x0 + label_w + idx * cell_w + cell_w / 2, y0 + 45, label, 14, 800, COLORS["ink"], "middle"))
-    for r_idx, row in enumerate(rows):
-        y = y0 + cell_h * (r_idx + 1)
-        parts.append(line(x0, y, x0 + label_w + cell_w * len(METRICS), y, COLORS["line"]))
-        parts.append(text(x0 + 20, y + 45, row["label"], 14, 800))
-        for c_idx, (key, _) in enumerate(METRICS):
-            value = row["metrics"][key]
-            denom = max(max_by_key[key] - min_by_key[key], 1e-9)
-            ratio = (value - min_by_key[key]) / denom
-            alpha = 0.10 + ratio * 0.36
-            x = x0 + label_w + c_idx * cell_w
-            parts.append(rect(x, y, cell_w, cell_h, COLORS["green"], opacity=alpha))
-            parts.append(text(x + cell_w / 2, y + 45, f"{value:.4f}", 14, 800, COLORS["ink"], "middle"))
-    for idx in range(len(METRICS) + 1):
-        x = x0 + label_w + idx * cell_w
-        parts.append(line(x, y0, x, y0 + cell_h * (len(rows) + 1), COLORS["line"]))
-    write_svg("fig2_metric_matrix.svg", width, height, "\n".join(parts))
-
-
-def figure_mapr_improvement(rows: list[dict]) -> None:
-    width, height = 1080, 600
-    baseline = next(row for row in rows if row["label"] == "UniXcoder")
-    base = baseline["metrics"]["map@r"]
-    deltas = [(row["label"], row["metrics"]["map@r"] - base, row["color"]) for row in rows if row["label"] != "UniXcoder"]
-    max_abs = max(abs(delta) for _, delta, _ in deltas)
-    parts = [title_block("MAP@R change relative to UniXcoder", f"Baseline UniXcoder MAP@R = {base:.4f}; positive values indicate ranking improvements.")]
-    x0, y0, track_w, row_h = 260, 170, 650, 82
-    zero = x0 + track_w / 2
-    for idx, (label, delta, color) in enumerate(deltas):
-        y = y0 + idx * row_h
-        parts.append(text(74, y + 30, label, 15, 800))
-        parts.append(rect(x0, y + 12, track_w, 20, "#f0f3f5", COLORS["line"], 10))
-        parts.append(line(zero, y + 8, zero, y + 38, "#aebbc7", 1.5))
-        bar_w = abs(delta) / max_abs * (track_w / 2)
-        x = zero if delta >= 0 else zero - bar_w
-        parts.append(rect(x, y + 16, bar_w, 12, color if delta >= 0 else COLORS["red"], radius=6))
-        sign = "+" if delta >= 0 else ""
-        parts.append(text(940, y + 31, f"{sign}{delta:.4f}", 16, 800, color if delta >= 0 else COLORS["red"], "end"))
-    parts.append(text(zero, 480, "0", 12, 700, COLORS["muted"], "middle"))
-    parts.append(text(x0, 480, f"-{max_abs:.3f}", 12, 700, COLORS["muted"], "middle"))
-    parts.append(text(x0 + track_w, 480, f"+{max_abs:.3f}", 12, 700, COLORS["muted"], "middle"))
-    write_svg("fig3_mapr_improvement.svg", width, height, "\n".join(parts))
-
-
-def rounded_box(x: float, y: float, w: float, h: float, title: str, body: str, fill: str, stroke: str) -> str:
-    return "\n".join(
-        [
-            rect(x, y, w, h, fill, stroke, 14),
-            text(x + 20, y + 34, title, 17, 800),
-            text(x + 20, y + 63, body, 13, 600, COLORS["muted"]),
-        ]
+def draw_main_results(rows: list[dict]) -> None:
+    fig, axes = plt.subplots(
+        1,
+        2,
+        figsize=(7.05, 2.75),
+        gridspec_kw={"width_ratios": [1.35, 1.0], "wspace": 0.28},
+        constrained_layout=True,
     )
 
+    ax = axes[0]
+    x = list(range(len(METRICS)))
+    bar_width = 0.18
+    offsets = [-1.5 * bar_width, -0.5 * bar_width, 0.5 * bar_width, 1.5 * bar_width]
+    for row, offset in zip(rows, offsets):
+        values = [row["metrics"][key] for key, _ in METRICS]
+        ax.bar([i + offset for i in x], values, width=bar_width, color=row["color"], label=row["label"])
 
-def arrow(x1: float, y1: float, x2: float, y2: float, color: str = COLORS["ink"]) -> str:
-    angle = math.atan2(y2 - y1, x2 - x1)
-    head = 10
-    p1 = (x2 - head * math.cos(angle - 0.5), y2 - head * math.sin(angle - 0.5))
-    p2 = (x2 - head * math.cos(angle + 0.5), y2 - head * math.sin(angle + 0.5))
-    return line(x1, y1, x2, y2, color, 2) + path(f"M {x2} {y2} L {p1[0]} {p1[1]} L {p2[0]} {p2[1]} Z", fill=color, stroke=color, width=1)
+    ax.set_title("(a) Retrieval metrics on POJ-104", loc="left", fontweight="bold")
+    ax.set_ylabel("Score")
+    ax.set_ylim(0, 1.05)
+    ax.set_xticks(x)
+    ax.set_xticklabels([label for _, label in METRICS])
+    ax.grid(axis="y", color="#d9dfe6", linewidth=0.5, alpha=0.8)
+    ax.set_axisbelow(True)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.legend(ncol=4, frameon=False, loc="upper center", bbox_to_anchor=(0.5, 1.20), handlelength=1.0, columnspacing=1.1)
 
+    ax = axes[1]
+    baseline = next(row for row in rows if row["label"] == "UniXcoder")["metrics"]["map@r"]
+    labels = []
+    deltas = []
+    colors = []
+    for row in rows:
+        if row["label"] in {"TF-IDF", "UniXcoder"}:
+            continue
+        labels.append(row["label"])
+        deltas.append(row["metrics"]["map@r"] - baseline)
+        colors.append(row["color"] if row["metrics"]["map@r"] >= baseline else "#b64e43")
+    ax.axvline(0, color="#596575", linewidth=0.8)
+    ax.barh(labels, deltas, color=colors, height=0.55)
+    for y, value in enumerate(deltas):
+        ax.text(value + 0.00045, y, f"+{value:.4f}", va="center", ha="left", fontsize=7)
+    ax.set_title("(b) MAP@R change vs. UniXcoder", loc="left", fontweight="bold")
+    ax.set_xlabel("Delta MAP@R")
+    ax.set_xlim(0, 0.0175)
+    ax.grid(axis="x", color="#d9dfe6", linewidth=0.5, alpha=0.8)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_visible(False)
 
-def figure_method_framework() -> None:
-    width, height = 1280, 690
-    parts = [title_block("Semantic code reuse retrieval framework", "The final model optimizes same-problem retrieval rather than fixed pair classification.")]
-    y = 170
-    boxes = [
-        (70, y, 210, 112, "POJ-104 code", "query + candidate pool", "#f9fbfc", COLORS["line"]),
-        (340, y, 220, 112, "UniXcoder encoder", "shared dual-tower weights", "#edf4ff", COLORS["blue"]),
-        (620, y, 230, 112, "Embedding space", "cosine similarity ranking", "#edf5f2", COLORS["green"]),
-        (910, y, 250, 112, "Top-K retrieval", "same problem should rank high", "#f7f0fb", COLORS["violet"]),
-    ]
-    for box in boxes:
-        parts.append(rounded_box(*box))
-    for idx in range(len(boxes) - 1):
-        x1 = boxes[idx][0] + boxes[idx][2]
-        x2 = boxes[idx + 1][0]
-        parts.append(arrow(x1 + 12, y + 56, x2 - 12, y + 56, COLORS["muted"]))
-    parts.append(rounded_box(318, 395, 290, 112, "Label-aware loss", "mask same-problem false negatives", "#fff8ec", COLORS["gold"]))
-    parts.append(rounded_box(672, 395, 318, 112, "SupCon + CE objective", "pull positives close; separate classes", "#eef6f4", COLORS["green"]))
-    parts.append(arrow(462, 395, 462, 292, COLORS["gold"]))
-    parts.append(arrow(831, 395, 744, 292, COLORS["green"]))
-    parts.append(text(640, 602, "Outcome: MAP@R improves from 0.9098 to 0.9254", 20, 800, COLORS["ink"], "middle"))
-    write_svg("fig4_method_framework.svg", width, height, "\n".join(parts))
-
-
-def figure_error_repair_case() -> None:
-    width, height = 1180, 650
-    parts = [title_block("Representative retrieval error repaired by SupCon CE", "Query test_7943: the first same-problem candidate moves from rank 1083 to rank 1.")]
-    y = 178
-    parts.append(rounded_box(70, y, 250, 100, "Query", "test_7943 / problem_96", "#f9fbfc", COLORS["line"]))
-    parts.append(rounded_box(445, 122, 300, 130, "UniXcoder baseline", "top-1: test_5720 / problem_92", "#fff7f4", COLORS["red"]))
-    parts.append(rounded_box(445, 354, 300, 130, "SupCon CE", "top-1: test_7600 / problem_96", "#eef6f4", COLORS["green"]))
-    parts.append(arrow(330, y + 48, 430, 184, COLORS["red"]))
-    parts.append(arrow(330, y + 72, 430, 418, COLORS["green"]))
-    parts.append(text(810, 174, "wrong problem", 18, 800, COLORS["red"]))
-    parts.append(text(810, 214, "first positive rank: 1083", 15, 700, COLORS["muted"]))
-    parts.append(text(810, 406, "same problem", 18, 800, COLORS["green"]))
-    parts.append(text(810, 446, "first positive rank: 1", 15, 700, COLORS["muted"]))
-    parts.append(rect(70, 548, 1040, 46, "#f8fafb", COLORS["line"], 10))
-    parts.append(text(92, 578, "Interpretation: supervised positives reshape the embedding neighborhood, reducing template-level semantic confusion.", 16, 700))
-    write_svg("fig5_repaired_case.svg", width, height, "\n".join(parts))
+    save_figure(fig, "fig1_main_results_cvpr")
 
 
-def write_index() -> None:
+def add_box(ax: plt.Axes, xy: tuple[float, float], wh: tuple[float, float], title: str, body: str, fc: str, ec: str) -> None:
+    x, y = xy
+    w, h = wh
+    box = FancyBboxPatch(
+        (x, y),
+        w,
+        h,
+        boxstyle="round,pad=0.015,rounding_size=0.035",
+        linewidth=0.9,
+        edgecolor=ec,
+        facecolor=fc,
+    )
+    ax.add_patch(box)
+    ax.text(x + 0.03, y + h - 0.08, title, fontweight="bold", fontsize=8, va="top")
+    ax.text(x + 0.03, y + h - 0.19, body, fontsize=7, va="top", color="#475569")
+
+
+def add_arrow(ax: plt.Axes, start: tuple[float, float], end: tuple[float, float], color: str = "#475569") -> None:
+    arrow = FancyArrowPatch(start, end, arrowstyle="-|>", mutation_scale=10, linewidth=0.9, color=color)
+    ax.add_patch(arrow)
+
+
+def draw_method_framework() -> None:
+    fig, ax = plt.subplots(figsize=(7.05, 2.95))
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    add_box(ax, (0.02, 0.58), (0.18, 0.22), "POJ-104 code", "query + candidate pool", "#f8fafc", "#cbd5e1")
+    add_box(ax, (0.27, 0.58), (0.20, 0.22), "UniXcoder", "shared dual-tower encoder", "#eef4ff", "#2f63ad")
+    add_box(ax, (0.55, 0.58), (0.20, 0.22), "Embedding space", "cosine similarity ranking", "#edf8f4", "#1b7f6d")
+    add_box(ax, (0.82, 0.58), (0.16, 0.22), "Top-K list", "same problem ranks high", "#f4f0ff", "#6a56b8")
+
+    add_arrow(ax, (0.21, 0.69), (0.265, 0.69))
+    add_arrow(ax, (0.48, 0.69), (0.545, 0.69))
+    add_arrow(ax, (0.76, 0.69), (0.815, 0.69))
+
+    add_box(ax, (0.25, 0.18), (0.24, 0.20), "Label-aware loss", "mask same-problem false negatives", "#fff7e8", "#b07a16")
+    add_box(ax, (0.57, 0.18), (0.28, 0.20), "SupCon + CE", "pull positives close; separate classes", "#ecf7f3", "#1b7f6d")
+    add_arrow(ax, (0.37, 0.39), (0.37, 0.57), "#b07a16")
+    add_arrow(ax, (0.71, 0.39), (0.66, 0.57), "#1b7f6d")
+
+    ax.text(0.01, 0.96, "Semantic retrieval framework", fontsize=10, fontweight="bold", va="top")
+    ax.text(0.01, 0.90, "The task is candidate retrieval for code reuse detection, not fixed-pair classification.", fontsize=7, color="#475569")
+    ax.text(0.50, 0.04, "Final MAP@R: 0.9254 (+0.0156 over local UniXcoder)", fontsize=8, fontweight="bold", ha="center")
+    save_figure(fig, "fig2_method_framework_cvpr")
+
+
+def draw_error_repair() -> None:
+    fig, axes = plt.subplots(1, 2, figsize=(7.05, 2.75), gridspec_kw={"width_ratios": [1.08, 1.0], "wspace": 0.30})
+
+    ax = axes[0]
+    ax.axis("off")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    add_box(ax, (0.03, 0.58), (0.32, 0.20), "Query", "test_7943 / problem_96", "#f8fafc", "#cbd5e1")
+    add_box(ax, (0.56, 0.70), (0.39, 0.18), "Baseline top-1", "test_5720 / problem_92", "#fff1ed", "#b64e43")
+    add_box(ax, (0.56, 0.32), (0.39, 0.18), "SupCon CE top-1", "test_7600 / problem_96", "#edf8f4", "#1b7f6d")
+    add_arrow(ax, (0.36, 0.68), (0.55, 0.78), "#b64e43")
+    add_arrow(ax, (0.36, 0.64), (0.55, 0.42), "#1b7f6d")
+    ax.text(0.03, 0.96, "(a) Repaired retrieval neighborhood", fontweight="bold", fontsize=9, va="top")
+    ax.text(0.56, 0.63, "wrong problem", color="#b64e43", fontsize=7, fontweight="bold")
+    ax.text(0.56, 0.25, "same problem", color="#1b7f6d", fontsize=7, fontweight="bold")
+
+    ax = axes[1]
+    labels = ["UniXcoder", "SupCon CE"]
+    ranks = [1083, 1]
+    colors = ["#b64e43", "#1b7f6d"]
+    ax.bar(labels, ranks, color=colors, width=0.55)
+    ax.set_yscale("log")
+    ax.set_ylabel("First positive rank (log)")
+    ax.set_title("(b) Positive candidate moves to rank 1", loc="left", fontweight="bold")
+    ax.grid(axis="y", color="#d9dfe6", linewidth=0.5, alpha=0.8)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    for i, value in enumerate(ranks):
+        ax.text(i, value * 1.25, str(value), ha="center", va="bottom", fontsize=8, fontweight="bold")
+
+    fig.suptitle("Error analysis aligned with the proposed improvement", x=0.01, y=1.02, ha="left", fontweight="bold")
+    save_figure(fig, "fig3_error_repair_cvpr")
+
+
+def write_readme() -> None:
     content = """# Paper Figures
 
-Standalone SVG figures generated from the project results.
+These figures are generated with Python/matplotlib in a compact CVPR-style layout.
+GitHub README embeds the PNG versions; the PDF versions are intended for reports or slides.
 
-- `fig1_retrieval_metrics.svg`: retrieval metrics grouped by method.
-- `fig2_metric_matrix.svg`: compact metric heatmap.
-- `fig3_mapr_improvement.svg`: MAP@R changes relative to UniXcoder.
-- `fig4_method_framework.svg`: task-specific method framework.
-- `fig5_repaired_case.svg`: representative retrieval error repaired by SupCon CE.
+- `fig1_main_results_cvpr.png` / `.pdf`: main retrieval metrics and MAP@R deltas.
+- `fig2_method_framework_cvpr.png` / `.pdf`: task-specific method framework.
+- `fig3_error_repair_cvpr.png` / `.pdf`: representative retrieval error repaired by SupCon CE.
 """
     (FIGURES / "README.md").write_text(content, encoding="utf-8")
 
 
 def main() -> None:
-    rows = method_rows()
-    figure_metric_bars(rows)
-    figure_metric_matrix(rows)
-    figure_mapr_improvement(rows)
-    figure_method_framework()
-    figure_error_repair_case()
-    write_index()
-    print(f"Wrote figures to {FIGURES}")
+    set_cvpr_style()
+    rows = load_methods()
+    draw_main_results(rows)
+    draw_method_framework()
+    draw_error_repair()
+    write_readme()
+    print(f"Wrote matplotlib figures to {FIGURES}")
 
 
 if __name__ == "__main__":

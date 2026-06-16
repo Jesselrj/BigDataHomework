@@ -1,9 +1,8 @@
 # Paper Figures
 
-Standalone SVG figures generated from the project results.
+These figures are generated with Python/matplotlib in a compact CVPR-style layout.
+GitHub README embeds the PNG versions; the PDF versions are intended for reports or slides.
 
-- `fig1_retrieval_metrics.svg`: retrieval metrics grouped by method.
-- `fig2_metric_matrix.svg`: compact metric heatmap.
-- `fig3_mapr_improvement.svg`: MAP@R changes relative to UniXcoder.
-- `fig4_method_framework.svg`: task-specific method framework.
-- `fig5_repaired_case.svg`: representative retrieval error repaired by SupCon CE.
+- `fig1_main_results_cvpr.png` / `.pdf`: main retrieval metrics and MAP@R deltas.
+- `fig2_method_framework_cvpr.png` / `.pdf`: task-specific method framework.
+- `fig3_error_repair_cvpr.png` / `.pdf`: representative retrieval error repaired by SupCon CE.
