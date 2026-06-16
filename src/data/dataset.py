@@ -46,10 +46,25 @@ class DualEncoderPairDataset(Dataset):
         rows = read_jsonl(path)
         if debug:
             rows = rows[:256]
+        self.pairs = []
+        if rows and {"code1", "code2", "label"} <= set(rows[0]):
+            label_to_id: dict[str, int] = {}
+            for row in rows:
+                if int(row["label"]) != 1:
+                    continue
+                if row.get("problem_id1") and row.get("problem_id1") == row.get("problem_id2"):
+                    label_key = "poj:" + str(row["problem_id1"])
+                else:
+                    label_key = "pair:" + str(row.get("id", len(self.pairs)))
+                label_id = label_to_id.setdefault(label_key, len(label_to_id))
+                self.pairs.append({"query_code": row["code1"], "positive_code": row["code2"], "label_id": label_id})
+            if not self.pairs:
+                raise ValueError("Dual encoder pair training needs at least one positive pair")
+            return
+
         by_problem: dict[str, list[dict]] = defaultdict(list)
         for row in rows:
             by_problem[row["problem_id"]].append(row)
-        self.pairs = []
         rng = random.Random(seed)
         label_to_id = {problem_id: idx for idx, problem_id in enumerate(sorted(by_problem))}
         for problem_id, items in by_problem.items():

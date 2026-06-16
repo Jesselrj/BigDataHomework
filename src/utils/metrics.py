@@ -28,15 +28,24 @@ def classification_metrics(y_true: Sequence[int], y_score: Sequence[float], thre
 
 
 def binary_auc(y_true: np.ndarray, y_score: np.ndarray) -> float:
-    positives = y_score[y_true == 1]
-    negatives = y_score[y_true == 0]
-    if len(positives) == 0 or len(negatives) == 0:
+    y_true = np.asarray(y_true, dtype=int)
+    y_score = np.asarray(y_score, dtype=float)
+    n_pos = int((y_true == 1).sum())
+    n_neg = int((y_true == 0).sum())
+    if n_pos == 0 or n_neg == 0:
         return 0.0
-    wins = 0.0
-    for pos in positives:
-        wins += float((pos > negatives).sum())
-        wins += 0.5 * float((pos == negatives).sum())
-    return wins / (len(positives) * len(negatives))
+    order = np.argsort(y_score, kind="mergesort")
+    ranks = np.empty(len(y_score), dtype=float)
+    sorted_scores = y_score[order]
+    start = 0
+    while start < len(sorted_scores):
+        end = start + 1
+        while end < len(sorted_scores) and sorted_scores[end] == sorted_scores[start]:
+            end += 1
+        ranks[order[start:end]] = (start + 1 + end) / 2.0
+        start = end
+    pos_rank_sum = float(ranks[y_true == 1].sum())
+    return (pos_rank_sum - n_pos * (n_pos + 1) / 2.0) / float(n_pos * n_neg)
 
 
 def retrieval_metrics(

@@ -3,7 +3,7 @@
   "recall@5": 0.9989166666666667,
   "recall@10": 0.99925,
   "mrr": 0.9985638126266388,
-  "map@r": 0.9116616022315672,
+  "map@r": 0.911661895650383,
   "num_queries": 12000.0,
   "method": "unixcoder_label_aware",
   "checkpoint": "outputs/checkpoints/unixcoder_label_aware",

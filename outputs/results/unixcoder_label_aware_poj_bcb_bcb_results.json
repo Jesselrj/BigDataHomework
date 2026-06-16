@@ -1,0 +1,36 @@
+{
+  "method": "unixcoder_label_aware_poj_bcb",
+  "checkpoint": "outputs/checkpoints/unixcoder_label_aware_poj_bcb",
+  "num_unique_eval_code_ids": 1824,
+  "fixed_threshold": 0.5,
+  "validation": {
+    "accuracy": 0.12960261520981378,
+    "precision": 0.12960261520981378,
+    "recall": 1.0,
+    "f1": 0.22946585545172668,
+    "auc": 0.9774294490354914
+  },
+  "test": {
+    "accuracy": 0.13677855450921486,
+    "precision": 0.13677855450921486,
+    "recall": 1.0,
+    "f1": 0.24064239066907225,
+    "auc": 0.9789840977361477
+  },
+  "validation_tuned_threshold": 0.9989327192306519,
+  "validation_tuned": {
+    "accuracy": 0.9460083386292295,
+    "precision": 0.7623358834730899,
+    "recall": 0.8476754768847862,
+    "f1": 0.8027439426586342,
+    "auc": 0.9774294490354914
+  },
+  "test_with_validation_tuned_threshold": {
+    "accuracy": 0.9423782425327865,
+    "precision": 0.7687617490805068,
+    "recall": 0.8276839141147483,
+    "f1": 0.7971354718420272,
+    "auc": 0.9789840977361477
+  },
+  "metric_protocol": "BigCloneBench binary clone detection: precision/recall/F1; fixed 0.5 plus validation-calibrated threshold for the siamese score"
+}

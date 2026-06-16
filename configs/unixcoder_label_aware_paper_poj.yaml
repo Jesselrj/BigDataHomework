@@ -1,0 +1,10 @@
+inherits: configs/unixcoder_retrieval.yaml
+experiment_name: unixcoder_label_aware_paper_poj
+label_aware_loss: true
+max_length: 400
+num_epochs: 2
+learning_rate: 2.0e-5
+dual_encoder_batch_size: 8
+checkpoint_dir: outputs/checkpoints/unixcoder_label_aware_paper_poj
+embedding_file: outputs/predictions/unixcoder_label_aware_paper_poj_test_embeddings.npz
+result_file: outputs/results/unixcoder_label_aware_paper_poj_results.json

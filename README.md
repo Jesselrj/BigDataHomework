@@ -119,7 +119,7 @@ outputs/results/
 | TF-IDF | 对比方法 | 检索 | 0.2169 | 0.8077 | 0.9140 | 0.9487 | 0.8561 | - |
 | CodeBERT | 对比方法 | 分类 | - | - | - | - | - | 0.9117 |
 | GraphCodeBERT | 对比方法 | 分类 | - | - | - | - | - | 0.9170 |
-| UniXcoder | 对比方法 | 检索 | 0.9095 | 0.9977 | 0.9988 | 0.9992 | 0.9982 | - |
+| UniXcoder | 对比方法 | 检索 | 0.9098 | 0.9976 | 0.9988 | 0.9993 | 0.9982 | - |
 | UniXcoder + Label-aware Loss | 本文优化 | 检索 | 0.9117 | 0.9982 | 0.9989 | 0.9992 | 0.9986 | - |
 | UniXcoder + GraphCodeBERT | 本文方法 | 检索 + 重排序 | 0.9053 | 0.9979 | 0.9989 | 0.9992 | 0.9984 | - |
 | Hybrid + Hard Negatives | 消融实验 | 检索 + 重排序 | 0.8884 | 0.9978 | 0.9983 | 0.9986 | 0.9981 | - |
@@ -127,6 +127,18 @@ outputs/results/
 其中 `UniXcoder + Label-aware Loss` 是在 UniXcoder baseline 上做的训练目标优化：batch 内同一 problem 的样本不再作为负例，而是共同作为正例，从而减少假负例带来的错误惩罚。`UniXcoder + GraphCodeBERT` 是本文专门设计的混合重排序方法。`Hybrid + Hard Negatives` 用于观察 hard negative 训练对结果的影响，属于消融实验。
 
 MAP@R 按 UniXcoder/CodeXGLUE 官方公式计算，即未进入 top-R 的相关样本按 0 计入。当前重排序方法提升了 Recall@1 和 MRR，但 MAP@R 低于 UniXcoder，说明现有融合权重更偏向提升首个正确结果，对 top-R 内整体相关样本排序仍需进一步优化。
+
+## 论文设置下的 POJ-104 + BigCloneBench 实验
+
+原版 UniXcoder 使用论文报告的指标作为对比：POJ-104 使用 MAP@R，BigCloneBench 使用 Recall、Precision 和 F1。我们的改良版使用两阶段训练：先按 POJ-104 设置训练 label-aware UniXcoder，再用 POJ 正例过采样和 BigCloneBench train 正例继续做 siamese contrastive 训练。
+
+| 方法 | 训练数据 | POJ-104 MAP@R | BCB Recall | BCB Precision | BCB F1 | 说明 |
+|---|---|---:|---:|---:|---:|---|
+| UniXcoder | 论文原始设置 | 0.9052 | 0.9290 | 0.9760 | 0.9520 | 论文报告指标 |
+| UniXcoder + Label-aware Loss | POJ-104 train | 0.8931 | - | - | - | 本文优化，按 POJ 论文设置训练 |
+| UniXcoder + Label-aware Loss | POJ-104 train + BigCloneBench train | 0.8925 | 0.8277 | 0.7688 | 0.7971 | 本文优化，BCB 使用验证集校准阈值 |
+
+BigCloneBench 的 Hugging Face 版本中，当前 train split 为 901028 条 pair，其中正例 450862 条；validation/test 均为 415416 条 pair。由于 siamese 相似度分数没有二分类 head，固定 0.5 阈值下 test F1 为 0.2406，但 AUC 为 0.9790；使用 validation 上选择的阈值 0.9989 后，test F1 为 0.7971。
 
 ## 本地展示前端
 

@@ -1,0 +1,11 @@
+{
+  "recall@1": 0.9959166666666667,
+  "recall@5": 0.9984166666666666,
+  "recall@10": 0.9989166666666667,
+  "mrr": 0.9969264153466938,
+  "map@r": 0.8931203526155408,
+  "num_queries": 12000.0,
+  "method": "unixcoder_label_aware_paper_poj",
+  "checkpoint": "outputs/checkpoints/unixcoder_label_aware_paper_poj",
+  "runtime_seconds": 512.9414279460907
+}

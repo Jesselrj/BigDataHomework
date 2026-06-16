@@ -1,0 +1,21 @@
+inherits: configs/base.yaml
+experiment_name: unixcoder_label_aware_poj_bcb
+model_name: outputs/checkpoints/unixcoder_label_aware_paper_poj
+pooling: mean
+temperature: 0.05
+label_aware_loss: true
+max_length: 512
+num_epochs: 1
+learning_rate: 5.0e-5
+dual_encoder_batch_size: 64
+checkpoint_dir: outputs/checkpoints/unixcoder_label_aware_poj_bcb
+embedding_file: outputs/predictions/unixcoder_label_aware_poj_bcb_poj_test_embeddings.npz
+result_file: outputs/results/unixcoder_label_aware_poj_bcb_poj_results.json
+bcb_result_file: outputs/results/unixcoder_label_aware_poj_bcb_bcb_results.json
+bcb_prediction_file: outputs/predictions/unixcoder_label_aware_poj_bcb_bcb_predictions.jsonl
+paths:
+  train_retrieval: data/processed/poj_bcb_positive_pairs.jsonl
+  valid_retrieval: data/processed/validation.jsonl
+  test_retrieval: data/processed/test.jsonl
+  valid_pairs: data/processed/bigclonebench_eval/validation_pairs.jsonl
+  test_pairs: data/processed/bigclonebench_eval/test_pairs.jsonl
