@@ -255,21 +255,21 @@ def error_analysis_detail_markdown() -> str:
 
 ## 分类说明
 
-- 误报风险：不同题目的代码共享类似输入输出模板、数组循环或排序结构，TF-IDF 这类词法方法会把它们排得很靠前。对查重系统来说，这会造成误报，让人工复核成本变高。
-- 漏召回风险：同一题目的代码可能变量命名、控制流、函数拆分和算法写法完全不同。它们才是语义代码复用检测真正要找的 Type-4 克隆，如果排不上前列，就会降低 MAP@R。
+- Label-aware 修正：普通 batch 内训练会把同一 problem_id 的其他代码当作负例推远。Label-aware loss 屏蔽这些假负例后，部分原本 top-1 误召回的 query 能回到同题代码。
+- SupCon CE 修正：最终方法显式把同题样本拉近、把不同题类别边界拉开，因此能修正普通 UniXcoder 对模板相似不同题的误召回。
+- 排名提升：有些 query 在 baseline 下虽然同题代码存在，但第一个同题结果排得很靠后。SupCon CE 把正例提前到 top-1，直接提升 MAP@R。
 - 长度限制：UniXcoder 输入长度为 512，超长代码会被截断。若核心判断或输出逻辑在后半段，向量表示会缺失关键信息，进而影响检索排序。
-- 模型漏判：二分类模型在部分正例代码对上给出低分，说明“把两个代码拼成一对判断”并不总是稳定。我们的主方法选择检索式双塔模型，是因为它更贴合 POJ-104 的任务设定。
-- 基线失败：TF-IDF top1 错误但 UniXcoder 能命中同题代码，说明预训练代码模型确实学到了超出 token 重合度的语义表示。
+- 二分类漏判：二分类模型在部分正例代码对上给出低分，说明“把两个代码拼成一对判断”并不总是稳定。我们的主方法选择检索式双塔模型，是因为它更贴合 POJ-104 的候选召回设定。
 
 ## 我们方法的对应改进
 
-UniXcoder baseline 已经能显著优于 TF-IDF，但普通 batch 内对比学习会把同一 problem_id 的其他代码误当负例。最终方法 UniXcoder + SupCon CE 使用 P-K balanced batch，让每个 batch 中同一题目至少有多个样本，并把同 problem_id 的代码作为正例拉近。这直接针对“低词法相似但语义相同”的漏召回问题。
+UniXcoder baseline 已经能显著优于词法基线，但普通 batch 内对比学习会把同一 problem_id 的其他代码误当负例。Label-aware loss 首先避免这类假负例继续破坏表示空间；最终方法 UniXcoder + SupCon CE 进一步使用 P-K balanced batch，让每个 batch 中同一题目至少有多个样本，并把同 problem_id 的代码作为正例拉近。这直接针对“同题不同写法”的漏召回问题。
 
-CE 辅助约束则帮助模型把不同 problem_id 的表示边界拉开，降低“高词法相似但语义不同”的误报风险。最终 MAP@R 从 UniXcoder baseline 的 0.9098 提升到 0.9254，说明这些训练目标改动确实改善了检索式查重的排序质量。
+CE 辅助约束则帮助模型把不同 problem_id 的表示边界拉开，降低“模板相似但语义不同”的误召回风险。最终 MAP@R 从 UniXcoder baseline 的 0.9098 提升到 0.9254，说明这些训练目标改动确实改善了检索式查重的排序质量。
 
 ## 汇报时的结论
 
-这些错误样例说明：词法相似不等于语义复用，词法不相似也不代表没有复用。本项目的价值在于把代码查重转化为语义检索问题，并通过监督对比学习让同题不同写法的代码在向量空间更接近，让不同题但模板相似的代码更容易分开。
+这些样例不只是说明 baseline 会错，更重要的是说明改进方法修正了哪些错：Label-aware 处理 batch 假负例，SupCon 拉近同题实现，CE 拉开不同题边界。本项目的价值在于把代码查重转化为语义检索问题，并让“同题不同写法”的代码在向量空间更接近，让“不同题但模板相似”的代码更容易分开。
 """
 
 
@@ -300,56 +300,92 @@ def false_negative_cases(limit: int = 3) -> list[dict]:
     return out
 
 
+def retrieval_repair_cases(specs: list[dict]) -> list[dict]:
+    rows_by_id = demo_rows_by_id()
+    cases = []
+    for spec in specs:
+        query = rows_by_id.get(spec["query"], {})
+        wrong = rows_by_id.get(spec["wrong"], {})
+        fixed = rows_by_id.get(spec["fixed"], {})
+        wrong_problem = wrong.get("problem_id", spec.get("wrong_problem", "不同题"))
+        fixed_problem = fixed.get("problem_id", spec.get("problem", "同题"))
+        if spec.get("mode") == "positive":
+            cases.append(
+                make_pair_case(
+                    f"{spec['query']} · {query.get('problem_id', spec.get('problem', ''))}",
+                    f"{spec['method']} 将第一个同题结果从 rank {spec['before']} 提前到 rank {spec['after']}；baseline top-1 是 {spec['wrong']}（{wrong_problem}）",
+                    f"Query {spec['query']}",
+                    f"改进后同题候选 {spec['fixed']}（{fixed_problem}）",
+                    query.get("code", ""),
+                    fixed.get("code", ""),
+                    "排序提升",
+                )
+            )
+        else:
+            cases.append(
+                make_pair_case(
+                    f"{spec['query']} · {query.get('problem_id', spec.get('problem', ''))}",
+                    f"{spec['method']} 修正 top-1：baseline 误召回 {spec['wrong']}（{wrong_problem}），改进后命中 {spec['fixed']}（{fixed_problem}）；同题 rank {spec['before']} → {spec['after']}",
+                    f"Query {spec['query']}",
+                    f"baseline 错误候选 {spec['wrong']}",
+                    query.get("code", ""),
+                    wrong.get("code", ""),
+                    "已修正",
+                )
+            )
+    return cases
+
+
 def build_error_case_groups() -> list[dict]:
     markdown = read_text(RESULTS_DIR / "error_analysis.md")
     rows_by_id = demo_rows_by_id()
     groups: list[dict] = []
 
-    lexical_cases = []
-    for line in markdown_section(markdown, "High lexical similarity but different semantics")[:3]:
-        values = parse_backtick_values(line)
-        left_code, right_code = parse_markdown_pair(line)
-        title = " vs ".join(values[:2]) if len(values) >= 2 else "高词法相似负例"
-        score = values[2] if len(values) >= 3 else "-"
-        lexical_cases.append(make_pair_case(title, f"TF-IDF score {score}，但语义标签不同", "样本 A", "样本 B", left_code, right_code, "易误报"))
     groups.append(
         {
-            "kind": "false_positive",
-            "kind_label": "误报风险",
-            "title": "高词法相似但语义不同",
-            "summary": "输入输出模板、循环和数组操作高度相似时，词法方法会把不同题目误判为相似。",
-            "cases": lexical_cases,
+            "kind": "label_fix",
+            "kind_label": "Label-aware 修正",
+            "title": "屏蔽 batch 假负例后的修正样例",
+            "summary": "这些 query 在普通 UniXcoder 下 top-1 召回到不同题；Label-aware loss 避免同题样本被当负例后，top-1 回到同题代码。",
+            "cases": retrieval_repair_cases(
+                [
+                    {"query": "test_1395", "wrong": "test_167", "fixed": "test_1208", "method": "Label-aware", "before": 7, "after": 1},
+                    {"query": "test_6245", "wrong": "test_8124", "fixed": "test_6138", "method": "Label-aware", "before": 6, "after": 1},
+                    {"query": "test_2688", "wrong": "test_10361", "fixed": "test_2628", "method": "Label-aware", "before": 5, "after": 1},
+                ]
+            ),
         }
     )
 
-    low_overlap_cases = []
-    for line in markdown_section(markdown, "Low lexical similarity but same semantics")[:3]:
-        values = parse_backtick_values(line)
-        problem = values[0] if values else "同题样本"
-        jaccard = values[1] if len(values) > 1 else "-"
-        left_id = values[2] if len(values) > 2 else ""
-        right_id = values[3] if len(values) > 3 else ""
-        left = rows_by_id.get(left_id, {})
-        right = rows_by_id.get(right_id, {})
-        left_code, right_code = parse_markdown_pair(line)
-        low_overlap_cases.append(
-            make_pair_case(
-                f"{problem} · {left_id} / {right_id}",
-                f"token Jaccard {jaccard}，语义相同但写法差异大",
-                left_id or "代码 A",
-                right_id or "代码 B",
-                left.get("code") or left_code,
-                right.get("code") or right_code,
-                "难召回",
-            )
-        )
     groups.append(
         {
-            "kind": "false_negative",
-            "kind_label": "漏召回风险",
-            "title": "低词法相似但语义相同",
-            "summary": "这类样本是语义查重的核心难点，需要模型理解实现意图，而不是只看 token 重合。",
-            "cases": low_overlap_cases,
+            "kind": "supcon_fix",
+            "kind_label": "SupCon CE 修正",
+            "title": "监督对比学习后的 top-1 修正样例",
+            "summary": "这些错误来自普通 UniXcoder 的语义空间混淆。SupCon CE 把同题代码拉近，并通过 CE 辅助约束拉开不同题边界。",
+            "cases": retrieval_repair_cases(
+                [
+                    {"query": "test_7943", "wrong": "test_5720", "fixed": "test_7600", "method": "SupCon CE", "before": 1083, "after": 1},
+                    {"query": "test_11110", "wrong": "test_3656", "fixed": "test_11136", "method": "SupCon CE", "before": 66, "after": 1},
+                    {"query": "test_9821", "wrong": "test_11034", "fixed": "test_9805", "method": "SupCon CE", "before": 19, "after": 1},
+                ]
+            ),
+        }
+    )
+
+    groups.append(
+        {
+            "kind": "rank_fix",
+            "kind_label": "正例提前",
+            "title": "同题候选被提前到 top-1",
+            "summary": "这类样例直接对应 MAP@R 的提升：第一个同题结果原本排在较后位置，改进模型把它提前到首位。",
+            "cases": retrieval_repair_cases(
+                [
+                    {"query": "test_7600", "wrong": "test_11928", "fixed": "test_7943", "method": "SupCon CE", "before": 19, "after": 1, "mode": "positive"},
+                    {"query": "test_11511", "wrong": "test_4169", "fixed": "test_11729", "method": "SupCon CE", "before": 11, "after": 1, "mode": "positive"},
+                    {"query": "test_8932", "wrong": "test_3630", "fixed": "test_8626", "method": "SupCon CE", "before": 8, "after": 1, "mode": "positive"},
+                ]
+            ),
         }
     )
 
@@ -387,37 +423,6 @@ def build_error_case_groups() -> list[dict]:
             "title": "神经模型漏判样例",
             "summary": "以下正例代码对被 GraphCodeBERT 判为不相似，展示了二分类模型在复杂实现上的漏判风险。",
             "cases": false_negative_cases(),
-        }
-    )
-
-    tfidf_fail_cases = []
-    for line in markdown_section(markdown, "Cases where neural models succeed but TF-IDF fails")[:3]:
-        values = parse_backtick_values(line)
-        query_id = values[0] if values else ""
-        problem = values[1] if len(values) > 1 else ""
-        neural_id = values[2] if len(values) > 2 else ""
-        neural_score = values[3] if len(values) > 3 else "-"
-        tfidf_id = values[4] if len(values) > 4 else ""
-        query = rows_by_id.get(query_id, {})
-        wrong = rows_by_id.get(tfidf_id, {})
-        tfidf_fail_cases.append(
-            make_pair_case(
-                f"{query_id} · {problem}",
-                f"TF-IDF top1 误召回 {tfidf_id}，语义模型 top1 命中 {neural_id}，score {neural_score}",
-                f"Query {query_id}",
-                f"TF-IDF 错误候选 {tfidf_id}",
-                query.get("code", ""),
-                wrong.get("code", ""),
-                "词法失败",
-            )
-        )
-    groups.append(
-        {
-            "kind": "baseline_fail",
-            "kind_label": "基线失败",
-            "title": "TF-IDF 失败但语义模型成功",
-            "summary": "这些样例体现了语义表示相对词法匹配的价值：词法 top1 错，语义模型仍能召回同题代码。",
-            "cases": tfidf_fail_cases,
         }
     )
 
@@ -708,7 +713,7 @@ INDEX_HTML = """<!doctype html>
         <div class="pipeline">
           <div>POJ-104</div>
           <div>语义检索样本</div>
-          <div>TF-IDF · UniXcoder</div>
+          <div>UniXcoder · SupCon CE</div>
           <div>SupCon CE 优化</div>
           <div>指标汇总与错误分析</div>
         </div>
@@ -1628,7 +1633,7 @@ tbody tr:hover {
   min-width: 0;
 }
 
-.case-code span {
+.case-code > span {
   display: block;
   margin-bottom: 6px;
   color: #344254;
@@ -1952,20 +1957,20 @@ const inferErrorText = (response, data) => {
 };
 
 const ERROR_SUMMARY = [
-  ["高词法相似负例", "不同题目的程序可能共享高度相似的循环、数组和输入输出模板，词法方法容易误判。"],
-  ["低词法相似正例", "同一题目的代码可以使用完全不同的变量组织、分支结构和实现风格。"],
-  ["长代码截断", "部分样本 token 数远超最大长度 512，模型可能无法观察完整逻辑。"],
-  ["不同算法策略", "同一问题下可能存在通用算法、特殊样例处理或不同复杂度实现。"],
-  ["语义模型优势", "UniXcoder 能在 TF-IDF top-1 失败时召回同题目代码，体现语义表示价值。"],
+  ["Label-aware 修正", "屏蔽 batch 内同题假负例后，部分普通 UniXcoder 的 top-1 误召回可以被修正。"],
+  ["SupCon CE 修正", "监督对比学习把同题实现拉近，CE 辅助约束把不同题边界拉开。"],
+  ["正例排名提前", "改进模型把原本排在后面的同题候选提前到 top-1，直接改善 MAP@R。"],
+  ["二分类漏判", "固定代码对二分类会漏掉部分正例，检索式双塔更贴合候选召回任务。"],
+  ["长度限制", "超长代码仍可能被 512 token 截断，是改进训练目标之外还需要说明的残余风险。"],
 ];
 
 const ERROR_KIND_ORDER = [
   ["all", "全部"],
-  ["false_positive", "误报风险"],
-  ["false_negative", "漏召回风险"],
+  ["label_fix", "Label-aware 修正"],
+  ["supcon_fix", "SupCon CE 修正"],
+  ["rank_fix", "正例提前"],
   ["truncation", "长度限制"],
   ["model_miss", "模型漏判"],
-  ["baseline_fail", "基线失败"],
 ];
 
 const escapeHtml = (text) => String(text)
