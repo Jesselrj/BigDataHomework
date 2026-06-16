@@ -35,12 +35,12 @@ def set_cvpr_style() -> None:
         {
             "font.family": "serif",
             "font.serif": ["DejaVu Serif", "Times New Roman", "Times"],
-            "font.size": 7,
-            "axes.titlesize": 8,
-            "axes.labelsize": 8,
-            "xtick.labelsize": 7,
-            "ytick.labelsize": 7,
-            "legend.fontsize": 7,
+            "font.size": 6.5,
+            "axes.titlesize": 7.2,
+            "axes.labelsize": 7,
+            "xtick.labelsize": 6.5,
+            "ytick.labelsize": 6.5,
+            "legend.fontsize": 6.5,
             "figure.titlesize": 10,
             "axes.linewidth": 0.7,
             "xtick.major.width": 0.7,
@@ -126,7 +126,19 @@ def draw_main_results(rows: list[dict]) -> None:
     save_figure(fig, "fig1_main_results_cvpr")
 
 
-def add_box(ax: plt.Axes, xy: tuple[float, float], wh: tuple[float, float], title: str, body: str, fc: str, ec: str) -> None:
+def add_box(
+    ax: plt.Axes,
+    xy: tuple[float, float],
+    wh: tuple[float, float],
+    title: str,
+    body: str,
+    fc: str,
+    ec: str,
+    title_size: float = 6.8,
+    body_size: float = 5.8,
+    title_y: float = 0.075,
+    body_y: float = 0.165,
+) -> None:
     x, y = xy
     w, h = wh
     box = FancyBboxPatch(
@@ -139,8 +151,8 @@ def add_box(ax: plt.Axes, xy: tuple[float, float], wh: tuple[float, float], titl
         facecolor=fc,
     )
     ax.add_patch(box)
-    ax.text(x + 0.03, y + h - 0.08, title, fontweight="bold", fontsize=8, va="top")
-    ax.text(x + 0.03, y + h - 0.19, body, fontsize=7, va="top", color="#475569")
+    ax.text(x + 0.03, y + h - title_y, title, fontweight="bold", fontsize=title_size, va="top")
+    ax.text(x + 0.03, y + h - body_y, body, fontsize=body_size, va="top", color="#475569")
 
 
 def add_arrow(ax: plt.Axes, start: tuple[float, float], end: tuple[float, float], color: str = "#475569") -> None:
@@ -149,46 +161,45 @@ def add_arrow(ax: plt.Axes, start: tuple[float, float], end: tuple[float, float]
 
 
 def draw_method_framework() -> None:
-    fig, ax = plt.subplots(figsize=(7.05, 2.95))
+    fig, ax = plt.subplots(figsize=(7.05, 3.20))
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.axis("off")
 
-    add_box(ax, (0.02, 0.58), (0.18, 0.22), "POJ-104 code", "query + candidate pool", "#f8fafc", "#cbd5e1")
-    add_box(ax, (0.27, 0.58), (0.20, 0.22), "UniXcoder", "shared dual-tower encoder", "#eef4ff", "#2f63ad")
-    add_box(ax, (0.55, 0.58), (0.20, 0.22), "Embedding space", "cosine similarity ranking", "#edf8f4", "#1b7f6d")
-    add_box(ax, (0.82, 0.58), (0.16, 0.22), "Top-K list", "same problem ranks high", "#f4f0ff", "#6a56b8")
+    add_box(ax, (0.02, 0.56), (0.18, 0.22), "POJ-104 code", "query + candidates", "#f8fafc", "#cbd5e1")
+    add_box(ax, (0.27, 0.56), (0.20, 0.22), "UniXcoder", "shared encoder", "#eef4ff", "#2f63ad")
+    add_box(ax, (0.55, 0.56), (0.20, 0.22), "Embedding space", "cosine ranking", "#edf8f4", "#1b7f6d")
+    add_box(ax, (0.82, 0.56), (0.16, 0.22), "Top-K list", "same-problem hits", "#f4f0ff", "#6a56b8")
 
-    add_arrow(ax, (0.21, 0.69), (0.265, 0.69))
-    add_arrow(ax, (0.48, 0.69), (0.545, 0.69))
-    add_arrow(ax, (0.76, 0.69), (0.815, 0.69))
+    add_arrow(ax, (0.21, 0.67), (0.265, 0.67))
+    add_arrow(ax, (0.48, 0.67), (0.545, 0.67))
+    add_arrow(ax, (0.76, 0.67), (0.815, 0.67))
 
-    add_box(ax, (0.25, 0.18), (0.24, 0.20), "Label-aware loss", "mask same-problem false negatives", "#fff7e8", "#b07a16")
-    add_box(ax, (0.57, 0.18), (0.28, 0.20), "SupCon + CE", "pull positives close; separate classes", "#ecf7f3", "#1b7f6d")
-    add_arrow(ax, (0.37, 0.39), (0.37, 0.57), "#b07a16")
-    add_arrow(ax, (0.71, 0.39), (0.66, 0.57), "#1b7f6d")
+    add_box(ax, (0.25, 0.20), (0.24, 0.22), "Label-aware loss", "mask false negatives", "#fff7e8", "#b07a16")
+    add_box(ax, (0.57, 0.20), (0.28, 0.22), "SupCon + CE", "pull positives; separate classes", "#ecf7f3", "#1b7f6d")
+    add_arrow(ax, (0.37, 0.43), (0.37, 0.55), "#b07a16")
+    add_arrow(ax, (0.71, 0.43), (0.66, 0.55), "#1b7f6d")
 
-    ax.text(0.01, 0.96, "Semantic retrieval framework", fontsize=10, fontweight="bold", va="top")
-    ax.text(0.01, 0.90, "The task is candidate retrieval for code reuse detection, not fixed-pair classification.", fontsize=7, color="#475569")
-    ax.text(0.50, 0.04, "Final MAP@R: 0.9254 (+0.0156 over local UniXcoder)", fontsize=8, fontweight="bold", ha="center")
+    ax.text(0.01, 0.94, "Retrieval framework for semantic code reuse", fontsize=7.2, fontweight="bold", va="top")
+    ax.text(0.50, 0.07, "Final MAP@R: 0.9254 (+0.0156 over local UniXcoder)", fontsize=6.8, fontweight="bold", ha="center")
     save_figure(fig, "fig2_method_framework_cvpr")
 
 
 def draw_error_repair() -> None:
-    fig, axes = plt.subplots(1, 2, figsize=(7.05, 2.75), gridspec_kw={"width_ratios": [1.08, 1.0], "wspace": 0.30})
+    fig, axes = plt.subplots(1, 2, figsize=(7.05, 3.05), gridspec_kw={"width_ratios": [1.12, 1.0], "wspace": 0.32}, constrained_layout=True)
 
     ax = axes[0]
     ax.axis("off")
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    add_box(ax, (0.03, 0.58), (0.32, 0.20), "Query", "test_7943 / problem_96", "#f8fafc", "#cbd5e1")
-    add_box(ax, (0.56, 0.70), (0.39, 0.18), "Baseline top-1", "test_5720 / problem_92", "#fff1ed", "#b64e43")
-    add_box(ax, (0.56, 0.32), (0.39, 0.18), "SupCon CE top-1", "test_7600 / problem_96", "#edf8f4", "#1b7f6d")
-    add_arrow(ax, (0.36, 0.68), (0.55, 0.78), "#b64e43")
-    add_arrow(ax, (0.36, 0.64), (0.55, 0.42), "#1b7f6d")
-    ax.text(0.03, 0.96, "(a) Repaired retrieval neighborhood", fontweight="bold", fontsize=9, va="top")
-    ax.text(0.56, 0.63, "wrong problem", color="#b64e43", fontsize=7, fontweight="bold")
-    ax.text(0.56, 0.25, "same problem", color="#1b7f6d", fontsize=7, fontweight="bold")
+    add_box(ax, (0.03, 0.56), (0.32, 0.20), "Query", "test_7943 / P96", "#f8fafc", "#cbd5e1")
+    add_box(ax, (0.57, 0.70), (0.38, 0.19), "Baseline top-1", "test_5720 / P92", "#fff1ed", "#b64e43")
+    add_box(ax, (0.57, 0.30), (0.38, 0.19), "SupCon CE top-1", "test_7600 / P96", "#edf8f4", "#1b7f6d")
+    add_arrow(ax, (0.36, 0.66), (0.56, 0.78), "#b64e43")
+    add_arrow(ax, (0.36, 0.61), (0.56, 0.40), "#1b7f6d")
+    ax.text(0.03, 0.96, "(a) Repaired retrieval neighborhood", fontweight="bold", fontsize=7.2, va="top")
+    ax.text(0.59, 0.62, "wrong problem", color="#b64e43", fontsize=5.8, fontweight="bold")
+    ax.text(0.59, 0.22, "same problem", color="#1b7f6d", fontsize=5.8, fontweight="bold")
 
     ax = axes[1]
     labels = ["UniXcoder", "SupCon CE"]
@@ -196,15 +207,15 @@ def draw_error_repair() -> None:
     colors = ["#b64e43", "#1b7f6d"]
     ax.bar(labels, ranks, color=colors, width=0.55)
     ax.set_yscale("log")
+    ax.set_ylim(0.7, 2400)
     ax.set_ylabel("First positive rank (log)")
     ax.set_title("(b) Positive candidate moves to rank 1", loc="left", fontweight="bold")
     ax.grid(axis="y", color="#d9dfe6", linewidth=0.5, alpha=0.8)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     for i, value in enumerate(ranks):
-        ax.text(i, value * 1.25, str(value), ha="center", va="bottom", fontsize=8, fontweight="bold")
+        ax.text(i, value * (1.12 if value > 10 else 1.28), str(value), ha="center", va="bottom", fontsize=7, fontweight="bold")
 
-    fig.suptitle("Error analysis aligned with the proposed improvement", x=0.01, y=1.02, ha="left", fontweight="bold")
     save_figure(fig, "fig3_error_repair_cvpr")
 
 
