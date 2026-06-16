@@ -2,7 +2,7 @@
 
 本仓库是 POJ-104 数据集上的语义代码复用检测实验代码。
 
-项目包含 TF-IDF、CodeBERT、GraphCodeBERT、UniXcoder、混合重排序和 hard negative 实验。
+项目包含 TF-IDF、CodeBERT、GraphCodeBERT、UniXcoder、UniXcoder 优化方法、混合重排序和 hard negative 实验。
 
 ## 我们的工作
 
@@ -11,6 +11,7 @@
 - 将 POJ-104 整理为语义代码复用检测任务，支持检索和二分类两种实验设置。
 - 实现 TF-IDF 词法检索基线、CodeBERT/GraphCodeBERT 代码对分类模型和 UniXcoder 双塔检索模型。
 - 优化 UniXcoder 的 batch 内对比学习目标，避免同一 problem 的样本被错误当作负例。
+- 在 UniXcoder 上实现监督对比学习 + CE 辅助约束，并使用 P-K balanced batch 采样增强同类正样本和跨类负样本。
 - 设计 UniXcoder 召回 + GraphCodeBERT 重排序的混合方法。
 - 构造 hard negative 样本，并分析其对分类和检索结果的影响。
 - 完成统一的训练、评测、结果汇总和误差分析流程。
@@ -92,6 +93,7 @@ bash scripts/train_codebert.sh
 bash scripts/train_graphcodebert.sh
 bash scripts/train_unixcoder.sh
 bash scripts/train_unixcoder_label_aware.sh
+bash scripts/train_unixcoder_supcon_ce_k2.sh
 bash scripts/run_hybrid_rerank.sh
 bash scripts/train_graphcodebert_hard_negatives.sh
 bash scripts/run_hybrid_rerank_hard.sh
@@ -120,25 +122,27 @@ outputs/results/
 | CodeBERT | 对比方法 | 分类 | F1 0.9117 | 代码对分类 |
 | GraphCodeBERT | 对比方法 | 分类 | F1 0.9170 | 代码对分类 |
 | UniXcoder | 对比方法 | 检索 | MAP@R 0.9098 | 本地复现 baseline |
-| Label-aware UniXcoder | 本文方法 | 检索 | MAP@R 0.9117 | 本项目主方法 |
+| Label-aware UniXcoder | 本文方法 | 检索 | MAP@R 0.9117 | 假负例修正 |
+| UniXcoder + SupCon CE (k=2) | 本文方法 | 检索 | MAP@R 0.9254 | 最终主方法 |
 | UniXcoder + GraphCodeBERT | 扩展实验 | 检索 + 重排序 | MAP@R 0.9053 | 两阶段重排序 |
 | Hybrid + Hard Negatives | 消融实验 | 检索 + 重排序 | MAP@R 0.8884 | 困难负例消融 |
 
-其中 `UniXcoder + Label-aware Loss` 是在 UniXcoder baseline 上做的训练目标优化：batch 内同一 problem 的样本不再作为负例，而是共同作为正例，从而减少假负例带来的错误惩罚。`UniXcoder + GraphCodeBERT` 是本文专门设计的混合重排序方法。`Hybrid + Hard Negatives` 用于观察 hard negative 训练对结果的影响，属于消融实验。
+其中 `UniXcoder + SupCon CE (k=2)` 是本项目最终主方法。它直接在 UniXcoder 上做训练目标和采样策略优化：每个 batch 中每个 `problem_id` 采样 2 个代码样本，同一 `problem_id` 的样本作为正例，不同 `problem_id` 的样本作为负例，并加入轻量 CE 辅助约束。`UniXcoder + Label-aware Loss` 是较早的假负例修正版本。`UniXcoder + GraphCodeBERT` 是扩展的混合重排序实验。`Hybrid + Hard Negatives` 用于观察 hard negative 训练对结果的影响，属于消融实验。
 
 MAP@R 按 UniXcoder/CodeXGLUE 官方公式计算，即未进入 top-R 的相关样本按 0 计入。当前重排序方法提升了 Recall@1 和 MRR，但 MAP@R 低于 UniXcoder，说明现有融合权重更偏向提升首个正确结果，对 top-R 内整体相关样本排序仍需进一步优化。
 
 ## POJ-104 主实验结论
 
-本课程作业的主结论聚焦 POJ-104 语义代码检索任务。相比 UniXcoder 原文报告的 MAP@R 0.9052，本项目的 Label-aware UniXcoder 达到 0.9117；相比本地复现的 UniXcoder baseline 0.9098，也有小幅提升。
+本课程作业的主结论聚焦 POJ-104 语义代码检索任务。相比 UniXcoder 原文报告的 MAP@R 0.9052，本项目最终方法 `UniXcoder + SupCon CE (k=2)` 达到 0.9254；相比本地复现的 UniXcoder baseline 0.9098，提升 0.0156。
 
 | 方法 | MAP@R | 相对原文 | 相对本地 baseline | 说明 |
 |---|---:|---:|---:|---|
 | UniXcoder 原文 | 0.9052 | - | - | 论文报告结果 |
 | UniXcoder baseline | 0.9098 | +0.0046 | - | 本地复现 |
-| Label-aware UniXcoder | 0.9117 | +0.0065 | +0.0019 | 本项目方法 |
+| Label-aware UniXcoder | 0.9117 | +0.0065 | +0.0019 | 假负例修正 |
+| UniXcoder + SupCon CE (k=2) | 0.9254 | +0.0202 | +0.0156 | 本项目最终方法 |
 
-Label-aware UniXcoder 的核心改动是：在 batch 内对比学习时，同一 problem 的样本不再被当作负例，而是共同作为正例，从而减少假负例带来的错误惩罚。
+最终方法的核心改动是：在 batch 内采用 P-K balanced sampling，每个题目采样 2 个代码样本；训练目标使用监督对比学习，将同一 `problem_id` 的样本共同作为正例；同时加入 CE 辅助约束，让表示空间更明确地区分不同题目类别。该方法只改变训练过程，评测仍使用标准 MAP@R。
 
 ## 本地展示前端
 

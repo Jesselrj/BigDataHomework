@@ -33,6 +33,7 @@ def write_final_table() -> None:
         ("GraphCodeBERT", "Classification", "outputs/results/graphcodebert_cls_results.json", "Pair classifier"),
         ("UniXcoder", "Retrieval", "outputs/results/unixcoder_retrieval_results.json", "Baseline dual encoder"),
         ("UniXcoder + Label-aware Loss", "Retrieval", "outputs/results/unixcoder_label_aware_results.json", "Ours: mask same-problem false negatives"),
+        ("UniXcoder + SupCon CE (k=2)", "Retrieval", "outputs/results/unixcoder_supcon_ce_k2_w02_results.json", "Ours: supervised contrastive training with class proxy"),
         ("UniXcoder + GraphCodeBERT", "Retrieval + Rerank", "outputs/results/hybrid_rerank_results.json", "Hybrid method"),
         ("Hybrid + Hard Negatives", "Retrieval + Rerank", "outputs/results/hybrid_rerank_hard_results.json", "Ablation"),
     ]

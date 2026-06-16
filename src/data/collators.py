@@ -44,3 +44,21 @@ class DualEncoderCollator:
             return_tensors="pt",
         )
         return {"query": query, "positive": positive, "labels": torch.tensor([int(b["label_id"]) for b in batch], dtype=torch.long)}
+
+
+@dataclass
+class RetrievalCollator:
+    tokenizer: object
+    max_length: int = 512
+
+    def __call__(self, batch: list[dict]) -> dict:
+        import torch
+        enc = self.tokenizer(
+            [b["code"] for b in batch],
+            truncation=True,
+            padding=True,
+            max_length=self.max_length,
+            return_tensors="pt",
+        )
+        enc["labels"] = torch.tensor([int(b["label_id"]) for b in batch], dtype=torch.long)
+        return enc

@@ -20,7 +20,7 @@ def main() -> None:
     log_environment(logger)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     tokenizer = load_code_tokenizer(cfg["checkpoint_dir"])
-    model = DualEncoder.from_checkpoint(cfg["checkpoint_dir"], cfg.get("pooling", "mean"), float(cfg.get("temperature", 0.05))).to(device)
+    model = DualEncoder.from_checkpoint(cfg["checkpoint_dir"], cfg.get("pooling", "mean"), float(cfg.get("temperature", 0.05)), bool(cfg.get("projection_head", False)), float(cfg.get("projection_dropout", 0.1))).to(device)
     rows = read_jsonl(cfg["paths"]["test_retrieval"])
     if args.debug:
         rows = rows[:128]
