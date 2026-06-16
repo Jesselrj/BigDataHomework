@@ -3,7 +3,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
+from functools import lru_cache
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -14,6 +16,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RESULTS_DIR = PROJECT_ROOT / "outputs" / "results"
 REPORT_PATH = PROJECT_ROOT / "语义代码复用检测实验报告.md"
 DEFAULT_CKPT_ROOT = PROJECT_ROOT / "outputs" / "checkpoints"
+DEFAULT_TEST_FILE = PROJECT_ROOT / "data" / "processed" / "test.jsonl"
+DEFAULT_MAX_CANDIDATES = 240
+
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 METHODS = [
     {
@@ -24,22 +31,6 @@ METHODS = [
         "notes": "词法相似度基线方法",
     },
     {
-        "id": "codebert",
-        "name": "CodeBERT",
-        "task": "代码对分类",
-        "file": "codebert_cls_results.json",
-        "notes": "预训练代码模型二分类器",
-        "checkpoint": "codebert_cls",
-    },
-    {
-        "id": "graphcodebert",
-        "name": "GraphCodeBERT",
-        "task": "代码对分类",
-        "file": "graphcodebert_cls_results.json",
-        "notes": "代码对分类器，并作为混合方法中的重排序模型",
-        "checkpoint": "graphcodebert_cls",
-    },
-    {
         "id": "unixcoder",
         "name": "UniXcoder",
         "task": "语义检索",
@@ -48,26 +39,27 @@ METHODS = [
         "checkpoint": "unixcoder_retrieval",
     },
     {
-        "id": "hybrid",
-        "name": "UniXcoder + GraphCodeBERT",
-        "task": "检索与重排序",
-        "file": "hybrid_rerank_results.json",
-        "notes": "先召回候选，再进行代码对级别重排序",
+        "id": "label_aware",
+        "name": "Label-aware UniXcoder",
+        "task": "语义检索",
+        "file": "unixcoder_label_aware_results.json",
+        "notes": "修正 batch 内同题样本被误作负例的问题",
+        "checkpoint": "unixcoder_label_aware",
     },
     {
-        "id": "hybrid_hard",
-        "name": "Hybrid + Hard Negatives",
-        "task": "困难负例消融",
-        "file": "hybrid_rerank_hard_results.json",
-        "notes": "加入随机、词法相似、长度结构相似负例后的消融结果",
+        "id": "supcon_ce",
+        "name": "UniXcoder + SupCon CE (k=2)",
+        "task": "语义检索",
+        "file": "unixcoder_supcon_ce_k2_w02_results.json",
+        "notes": "基于 P-K balanced batch 的监督对比学习与 CE 辅助约束",
+        "checkpoint": "unixcoder_supcon_ce_k2_w02",
     },
 ]
 
 INFERENCE_MODELS = [
-    {"name": "CodeBERT", "checkpoint": "codebert_cls"},
-    {"name": "GraphCodeBERT", "checkpoint": "graphcodebert_cls"},
-    {"name": "GraphCodeBERT + Hard Negatives", "checkpoint": "graphcodebert_hard_negatives"},
     {"name": "UniXcoder", "checkpoint": "unixcoder_retrieval"},
+    {"name": "Label-aware UniXcoder", "checkpoint": "unixcoder_label_aware"},
+    {"name": "UniXcoder + SupCon CE (k=2)", "checkpoint": "unixcoder_supcon_ce_k2_w02"},
 ]
 
 MODEL_CACHE: dict[str, tuple[object, object, object]] = {}
@@ -77,6 +69,18 @@ def read_json(path: Path) -> dict:
     if not path.exists():
         return {"status": "missing", "path": str(path)}
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def read_jsonl(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+    rows = []
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    return rows
 
 
 def read_text(path: Path, max_chars: int | None = None) -> str:
@@ -130,6 +134,296 @@ def checkpoint_status() -> list[dict]:
     return rows
 
 
+def demo_data_path() -> Path:
+    return Path(os.environ.get("SEMANTIC_REUSE_TEST_FILE", str(DEFAULT_TEST_FILE))).expanduser()
+
+
+@lru_cache(maxsize=1)
+def demo_rows() -> tuple[dict, ...]:
+    return tuple(read_jsonl(demo_data_path()))
+
+
+def demo_examples(limit: int = 6) -> list[dict]:
+    grouped: dict[str, list[dict]] = {}
+    for row in demo_rows():
+        grouped.setdefault(str(row.get("problem_id", "")), []).append(row)
+
+    examples = []
+    for problem_id, rows in grouped.items():
+        if len(rows) < 2:
+            continue
+        query, positive = rows[0], rows[1]
+        examples.append(
+            {
+                "id": f"{query.get('id')}-{positive.get('id')}",
+                "title": f"{problem_id} · {query.get('id')} vs candidate pool",
+                "problem_id": problem_id,
+                "query_id": query.get("id"),
+                "positive_id": positive.get("id"),
+                "query_code": query.get("code", ""),
+                "positive_code": positive.get("code", ""),
+            }
+        )
+        if len(examples) >= limit:
+            break
+    return examples
+
+
+def clamp_int(value: object, default: int, lower: int, upper: int) -> int:
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        parsed = default
+    return max(lower, min(upper, parsed))
+
+
+def build_candidate_rows(query_id: str | None, problem_id: str | None, max_candidates: int) -> list[dict]:
+    positives = []
+    negatives = []
+    for row in demo_rows():
+        if query_id and row.get("id") == query_id:
+            continue
+        if problem_id and row.get("problem_id") == problem_id:
+            positives.append(row)
+        else:
+            negatives.append(row)
+    pool = positives[: min(len(positives), max_candidates // 2)]
+    pool.extend(negatives[: max_candidates - len(pool)])
+    return pool[:max_candidates]
+
+
+def compact_code(code: str, limit: int = 1400) -> str:
+    text = str(code or "").strip()
+    return text[:limit] + ("\n..." if len(text) > limit else "")
+
+
+def code_tokens(code: str) -> set[str]:
+    return set(re.findall(r"[A-Za-z_]\w*|\d+|==|!=|<=|>=|&&|\|\||[{}()[\];,+\-*/%=<>]", str(code or "")))
+
+
+def token_jaccard(left: str, right: str) -> float:
+    a = code_tokens(left)
+    b = code_tokens(right)
+    return len(a & b) / max(len(a | b), 1)
+
+
+@lru_cache(maxsize=1)
+def demo_rows_by_id() -> dict[str, dict]:
+    return {str(row.get("id")): row for row in demo_rows()}
+
+
+def markdown_section(markdown: str, title: str) -> list[str]:
+    marker = f"## {title}"
+    start = markdown.find(marker)
+    if start == -1:
+        return []
+    next_start = markdown.find("\n## ", start + len(marker))
+    section = markdown[start: next_start if next_start != -1 else None]
+    return [line.strip() for line in section.splitlines() if line.strip().startswith("- ")]
+
+
+def parse_backtick_values(line: str) -> list[str]:
+    return re.findall(r"`([^`]+)`", line)
+
+
+def parse_markdown_pair(line: str) -> tuple[str, str]:
+    pieces = re.findall(r": `([^`]+)` / `([^`]+)`", line)
+    if pieces:
+        return pieces[0]
+    pieces = re.findall(r"\. `([^`]+)` / `([^`]+)`", line)
+    if pieces:
+        return pieces[0]
+    return "", ""
+
+
+def make_pair_case(title: str, subtitle: str, left_label: str, right_label: str, left_code: str, right_code: str, badge: str) -> dict:
+    return {
+        "title": title,
+        "subtitle": subtitle,
+        "badge": badge,
+        "left_label": left_label,
+        "right_label": right_label,
+        "left_code": compact_code(left_code),
+        "right_code": compact_code(right_code),
+    }
+
+
+def error_analysis_detail_markdown() -> str:
+    return """## 与本任务的关系
+
+本作业的任务不是判断固定两段代码是否相同，而是模拟代码查重中的候选召回：给定一段待查代码，在 POJ-104 候选库中检索解决同一问题的代码。评价指标 MAP@R 关注的是相关代码能否排在前 R 个结果中，因此错误分析也围绕“该召回的没召回”和“不该靠前的排太前”展开。
+
+## 分类说明
+
+- 误报风险：不同题目的代码共享类似输入输出模板、数组循环或排序结构，TF-IDF 这类词法方法会把它们排得很靠前。对查重系统来说，这会造成误报，让人工复核成本变高。
+- 漏召回风险：同一题目的代码可能变量命名、控制流、函数拆分和算法写法完全不同。它们才是语义代码复用检测真正要找的 Type-4 克隆，如果排不上前列，就会降低 MAP@R。
+- 长度限制：UniXcoder 输入长度为 512，超长代码会被截断。若核心判断或输出逻辑在后半段，向量表示会缺失关键信息，进而影响检索排序。
+- 模型漏判：二分类模型在部分正例代码对上给出低分，说明“把两个代码拼成一对判断”并不总是稳定。我们的主方法选择检索式双塔模型，是因为它更贴合 POJ-104 的任务设定。
+- 基线失败：TF-IDF top1 错误但 UniXcoder 能命中同题代码，说明预训练代码模型确实学到了超出 token 重合度的语义表示。
+
+## 我们方法的对应改进
+
+UniXcoder baseline 已经能显著优于 TF-IDF，但普通 batch 内对比学习会把同一 problem_id 的其他代码误当负例。最终方法 UniXcoder + SupCon CE 使用 P-K balanced batch，让每个 batch 中同一题目至少有多个样本，并把同 problem_id 的代码作为正例拉近。这直接针对“低词法相似但语义相同”的漏召回问题。
+
+CE 辅助约束则帮助模型把不同 problem_id 的表示边界拉开，降低“高词法相似但语义不同”的误报风险。最终 MAP@R 从 UniXcoder baseline 的 0.9098 提升到 0.9254，说明这些训练目标改动确实改善了检索式查重的排序质量。
+
+## 汇报时的结论
+
+这些错误样例说明：词法相似不等于语义复用，词法不相似也不代表没有复用。本项目的价值在于把代码查重转化为语义检索问题，并通过监督对比学习让同题不同写法的代码在向量空间更接近，让不同题但模板相似的代码更容易分开。
+"""
+
+
+def false_negative_cases(limit: int = 3) -> list[dict]:
+    path = PROJECT_ROOT / "outputs" / "predictions" / "graphcodebert_cls_predictions.jsonl"
+    cases: list[tuple[float, dict]] = []
+    if not path.exists():
+        return []
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            row = json.loads(line)
+            if row.get("label") == 1 and row.get("prediction") == 0:
+                cases.append((token_jaccard(row.get("code1", ""), row.get("code2", "")), row))
+    cases.sort(key=lambda item: item[0], reverse=True)
+    out = []
+    for overlap, row in cases[:limit]:
+        out.append(
+            make_pair_case(
+                f"{row.get('id')} · {row.get('problem_id1')}",
+                f"GraphCodeBERT false negative，score {float(row.get('score', 0.0)):.4f}，token Jaccard {overlap:.4f}",
+                "代码 A",
+                "代码 B",
+                row.get("code1", ""),
+                row.get("code2", ""),
+                "漏判",
+            )
+        )
+    return out
+
+
+def build_error_case_groups() -> list[dict]:
+    markdown = read_text(RESULTS_DIR / "error_analysis.md")
+    rows_by_id = demo_rows_by_id()
+    groups: list[dict] = []
+
+    lexical_cases = []
+    for line in markdown_section(markdown, "High lexical similarity but different semantics")[:3]:
+        values = parse_backtick_values(line)
+        left_code, right_code = parse_markdown_pair(line)
+        title = " vs ".join(values[:2]) if len(values) >= 2 else "高词法相似负例"
+        score = values[2] if len(values) >= 3 else "-"
+        lexical_cases.append(make_pair_case(title, f"TF-IDF score {score}，但语义标签不同", "样本 A", "样本 B", left_code, right_code, "易误报"))
+    groups.append(
+        {
+            "kind": "false_positive",
+            "kind_label": "误报风险",
+            "title": "高词法相似但语义不同",
+            "summary": "输入输出模板、循环和数组操作高度相似时，词法方法会把不同题目误判为相似。",
+            "cases": lexical_cases,
+        }
+    )
+
+    low_overlap_cases = []
+    for line in markdown_section(markdown, "Low lexical similarity but same semantics")[:3]:
+        values = parse_backtick_values(line)
+        problem = values[0] if values else "同题样本"
+        jaccard = values[1] if len(values) > 1 else "-"
+        left_id = values[2] if len(values) > 2 else ""
+        right_id = values[3] if len(values) > 3 else ""
+        left = rows_by_id.get(left_id, {})
+        right = rows_by_id.get(right_id, {})
+        left_code, right_code = parse_markdown_pair(line)
+        low_overlap_cases.append(
+            make_pair_case(
+                f"{problem} · {left_id} / {right_id}",
+                f"token Jaccard {jaccard}，语义相同但写法差异大",
+                left_id or "代码 A",
+                right_id or "代码 B",
+                left.get("code") or left_code,
+                right.get("code") or right_code,
+                "难召回",
+            )
+        )
+    groups.append(
+        {
+            "kind": "false_negative",
+            "kind_label": "漏召回风险",
+            "title": "低词法相似但语义相同",
+            "summary": "这类样本是语义查重的核心难点，需要模型理解实现意图，而不是只看 token 重合。",
+            "cases": low_overlap_cases,
+        }
+    )
+
+    long_cases = []
+    for line in markdown_section(markdown, "Long code snippets truncated by max length")[:3]:
+        values = parse_backtick_values(line)
+        sample_id = values[0] if values else ""
+        problem = values[1] if len(values) > 1 else ""
+        tokens = values[2] if len(values) > 2 else "-"
+        row = rows_by_id.get(sample_id, {})
+        snippet = parse_backtick_values(line)[-1] if parse_backtick_values(line) else ""
+        long_cases.append(
+            {
+                "title": f"{sample_id} · {problem}",
+                "subtitle": f"{tokens} tokens，超过 max_length 512，后半段逻辑可能被截断",
+                "badge": "截断风险",
+                "single_label": sample_id,
+                "single_code": compact_code(row.get("code") or snippet),
+            }
+        )
+    groups.append(
+        {
+            "kind": "truncation",
+            "kind_label": "长度限制",
+            "title": "长代码截断风险",
+            "summary": "模型最大长度为 512，超长代码的关键逻辑如果出现在后半部分，会影响向量表示。",
+            "cases": long_cases,
+        }
+    )
+
+    groups.append(
+        {
+            "kind": "model_miss",
+            "kind_label": "模型漏判",
+            "title": "神经模型漏判样例",
+            "summary": "以下正例代码对被 GraphCodeBERT 判为不相似，展示了二分类模型在复杂实现上的漏判风险。",
+            "cases": false_negative_cases(),
+        }
+    )
+
+    tfidf_fail_cases = []
+    for line in markdown_section(markdown, "Cases where neural models succeed but TF-IDF fails")[:3]:
+        values = parse_backtick_values(line)
+        query_id = values[0] if values else ""
+        problem = values[1] if len(values) > 1 else ""
+        neural_id = values[2] if len(values) > 2 else ""
+        neural_score = values[3] if len(values) > 3 else "-"
+        tfidf_id = values[4] if len(values) > 4 else ""
+        query = rows_by_id.get(query_id, {})
+        wrong = rows_by_id.get(tfidf_id, {})
+        tfidf_fail_cases.append(
+            make_pair_case(
+                f"{query_id} · {problem}",
+                f"TF-IDF top1 误召回 {tfidf_id}，语义模型 top1 命中 {neural_id}，score {neural_score}",
+                f"Query {query_id}",
+                f"TF-IDF 错误候选 {tfidf_id}",
+                query.get("code", ""),
+                wrong.get("code", ""),
+                "词法失败",
+            )
+        )
+    groups.append(
+        {
+            "kind": "baseline_fail",
+            "kind_label": "基线失败",
+            "title": "TF-IDF 失败但语义模型成功",
+            "summary": "这些样例体现了语义表示相对词法匹配的价值：词法 top1 错，语义模型仍能召回同题代码。",
+            "cases": tfidf_fail_cases,
+        }
+    )
+
+    return groups
+
+
 def build_summary() -> dict:
     methods = []
     for method in METHODS:
@@ -146,8 +440,7 @@ def build_summary() -> dict:
         key=lambda item: item["metrics"]["f1"],
         default=None,
     )
-    ablation = read_json(RESULTS_DIR / "hard_negative_ablation.json")
-    error_analysis = read_report_section("## 7. 错误分析", "## 8. 可复现性", RESULTS_DIR / "error_analysis.md", max_chars=9000)
+    error_analysis = error_analysis_detail_markdown()
     final_table = read_text(RESULTS_DIR / "final_results.md")
     return {
         "project_root": str(PROJECT_ROOT),
@@ -156,10 +449,13 @@ def build_summary() -> dict:
         "methods": methods,
         "best_retrieval": best_retrieval,
         "best_classifier": best_classifier,
-        "ablation": ablation,
+        "ablation": {},
         "error_analysis": error_analysis,
+        "error_case_groups": build_error_case_groups(),
         "final_table": final_table,
         "checkpoints": checkpoint_status(),
+        "inference_models": INFERENCE_MODELS,
+        "examples": demo_examples(),
     }
 
 
@@ -171,7 +467,7 @@ def static_preview_html() -> str:
     )
 
 
-def load_cross_encoder(checkpoint: Path):
+def load_dual_encoder(checkpoint: Path):
     key = str(checkpoint.resolve())
     if key in MODEL_CACHE:
         return MODEL_CACHE[key]
@@ -185,73 +481,118 @@ def load_cross_encoder(checkpoint: Path):
 
     try:
         import torch
-        from transformers import AutoModelForSequenceClassification, AutoTokenizer
+        from src.models.dual_encoder import DualEncoder, load_code_tokenizer
     except Exception as exc:  # pragma: no cover - depends on local environment
         raise RuntimeError("当前环境缺少 torch 或 transformers，请先安装 requirements.txt 后再进行本地推理。") from exc
 
-    if torch.backends.mps.is_available():
-        device = torch.device("mps")
+    requested_device = os.environ.get("SEMANTIC_REUSE_DEVICE", "auto")
+    if requested_device != "auto":
+        device = torch.device(requested_device)
     elif torch.cuda.is_available():
         device = torch.device("cuda")
+    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        device = torch.device("mps")
     else:
         device = torch.device("cpu")
 
-    tokenizer = AutoTokenizer.from_pretrained(str(checkpoint))
-    model = AutoModelForSequenceClassification.from_pretrained(str(checkpoint)).to(device)
+    tokenizer = load_code_tokenizer(str(checkpoint))
+    model = DualEncoder.from_checkpoint(str(checkpoint)).to(device)
     model.eval()
     MODEL_CACHE[key] = (tokenizer, model, device)
     return MODEL_CACHE[key]
 
 
-def infer_pair(payload: dict) -> dict:
-    code1 = str(payload.get("code1", "")).strip()
-    code2 = str(payload.get("code2", "")).strip()
-    if not code1 or not code2:
-        return {"ok": False, "error": "请分别输入两段待比较的代码。"}
+def find_example(example_id: str) -> dict | None:
+    for example in demo_examples():
+        if example["id"] == example_id:
+            return example
+    return None
 
-    model_id = str(payload.get("model", "graphcodebert_cls"))
-    allowed = {"graphcodebert_cls", "codebert_cls", "graphcodebert_hard_negatives"}
+
+def infer_retrieval(payload: dict) -> dict:
+    example_id = str(payload.get("example_id", ""))
+    example = find_example(example_id) if example_id else None
+    code = str(payload.get("code", "") or (example or {}).get("query_code", "")).strip()
+    if not code:
+        return {"ok": False, "error": "请先输入或选择一段查询代码。"}
+
+    model_id = str(payload.get("model", ""))
+    allowed = {item["checkpoint"] for item in INFERENCE_MODELS}
     if model_id not in allowed:
         return {"ok": False, "error": f"当前不支持该模型：{model_id}"}
 
-    root = local_checkpoint_root()
-    checkpoint = root / model_id
-    tokenizer, model, device = load_cross_encoder(checkpoint)
-
     import torch
+    from src.models.dual_encoder import encode_rows
 
-    max_length = int(payload.get("max_length", 512))
-    enc = tokenizer(
-        [code1],
-        [code2],
-        truncation=True,
-        padding=True,
-        max_length=max_length,
-        return_tensors="pt",
-    )
-    enc = {key: value.to(device) for key, value in enc.items()}
-    with torch.no_grad():
-        logits = model(**enc).logits
-        probs = torch.softmax(logits, dim=-1)[0].detach().cpu().tolist()
-    score = float(probs[1])
+    max_candidates = clamp_int(payload.get("max_candidates"), DEFAULT_MAX_CANDIDATES, 20, 600)
+    top_k = clamp_int(payload.get("top_k"), 5, 1, 12)
+    query_id = str((example or {}).get("query_id") or payload.get("query_id") or "") or None
+    problem_id = str((example or {}).get("problem_id") or payload.get("problem_id") or "") or None
+    candidates = build_candidate_rows(query_id, problem_id, max_candidates)
+    if not candidates:
+        return {"ok": False, "error": f"未找到可检索的测试集样本：{demo_data_path()}"}
+
+    checkpoint = local_checkpoint_root() / model_id
+    tokenizer, model, device = load_dual_encoder(checkpoint)
+    max_length = clamp_int(payload.get("max_length"), 512, 64, 1024)
+    batch_size = clamp_int(payload.get("batch_size"), 64, 1, 128)
+
+    query_vec = encode_rows(model, tokenizer, [{"code": code}], device, max_length, 1)
+    candidate_vecs = encode_rows(model, tokenizer, candidates, device, max_length, batch_size)
+    scores = (query_vec @ candidate_vecs.T).squeeze(0)
+    ranked = torch.argsort(scores, descending=True).tolist()[:top_k]
+
+    results = []
+    for rank, idx in enumerate(ranked, start=1):
+        row = candidates[idx]
+        candidate_problem = str(row.get("problem_id", ""))
+        results.append(
+            {
+                "rank": rank,
+                "id": row.get("id"),
+                "problem_id": candidate_problem,
+                "score": float(scores[idx]),
+                "is_same_problem": bool(problem_id and candidate_problem == problem_id),
+                "code": str(row.get("code", ""))[:1800],
+            }
+        )
+
     return {
         "ok": True,
         "model": model_id,
         "checkpoint": str(checkpoint),
         "device": str(device),
-        "semantic_equivalence_score": score,
-        "prediction": int(score >= 0.5),
-        "label": "语义等价" if score >= 0.5 else "语义不等价",
+        "query_id": query_id,
+        "problem_id": problem_id,
+        "candidate_count": len(candidates),
+        "top_k": top_k,
+        "results": results,
     }
 
 
 class AppHandler(BaseHTTPRequestHandler):
     server_version = "SemanticReuseDemo/0.1"
 
+    def do_HEAD(self) -> None:
+        parsed = urlparse(self.path)
+        if parsed.path in {"/", "/index.html"}:
+            self.respond_headers("text/html; charset=utf-8", len(INDEX_HTML.encode("utf-8")))
+            return
+        if parsed.path == "/static/app.css":
+            self.respond_headers("text/css; charset=utf-8", len(APP_CSS.encode("utf-8")))
+            return
+        if parsed.path == "/static/app.js":
+            self.respond_headers("application/javascript; charset=utf-8", len(APP_JS.encode("utf-8")))
+            return
+        if parsed.path in {"/api/summary", "/api/health"}:
+            self.respond_headers("application/json; charset=utf-8", 0)
+            return
+        self.send_error(HTTPStatus.NOT_FOUND, "Not found")
+
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path in {"/", "/index.html"}:
-            self.respond(INDEX_HTML, "text/html; charset=utf-8")
+            self.respond(static_preview_html(), "text/html; charset=utf-8")
             return
         if parsed.path == "/static/app.css":
             self.respond(APP_CSS, "text/css; charset=utf-8")
@@ -275,7 +616,7 @@ class AppHandler(BaseHTTPRequestHandler):
         try:
             length = int(self.headers.get("Content-Length", "0"))
             payload = json.loads(self.rfile.read(length).decode("utf-8") or "{}")
-            result = infer_pair(payload)
+            result = infer_retrieval(payload)
             status = HTTPStatus.OK if result.get("ok") else HTTPStatus.BAD_REQUEST
             self.respond_json(result, status=status)
         except FileNotFoundError as exc:
@@ -295,12 +636,15 @@ class AppHandler(BaseHTTPRequestHandler):
 
     def respond(self, body: str, content_type: str, status: HTTPStatus = HTTPStatus.OK) -> None:
         data = body.encode("utf-8")
+        self.respond_headers(content_type, len(data), status=status)
+        self.wfile.write(data)
+
+    def respond_headers(self, content_type: str, content_length: int, status: HTTPStatus = HTTPStatus.OK) -> None:
         self.send_response(status)
         self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Content-Length", str(content_length))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        self.wfile.write(data)
 
     def respond_json(self, payload: dict, status: HTTPStatus = HTTPStatus.OK) -> None:
         self.respond(json.dumps(payload, ensure_ascii=False), "application/json; charset=utf-8", status)
@@ -324,8 +668,8 @@ INDEX_HTML = """<!doctype html>
     <nav class="tabs" aria-label="Main navigation">
       <button class="tab is-active" data-view="overview">总览</button>
       <button class="tab" data-view="metrics">指标</button>
+      <button class="tab" data-view="demo">示例推理</button>
       <button class="tab" data-view="errors">错误分析</button>
-      <button class="tab" data-view="demo">推理演示</button>
     </nav>
     <div id="headerStatus" class="header-status">加载中</div>
   </header>
@@ -345,9 +689,9 @@ INDEX_HTML = """<!doctype html>
             <small id="bestRetrievalMeta">MAP@R</small>
           </article>
           <article class="summary-block accent-blue">
-            <span>最佳分类</span>
+            <span>优化提升</span>
             <strong id="bestClassifier">-</strong>
-            <small id="bestClassifierMeta">F1</small>
+            <small id="bestClassifierMeta">vs UniXcoder</small>
           </article>
           <article class="summary-block accent-red">
             <span>运行模式</span>
@@ -359,20 +703,20 @@ INDEX_HTML = """<!doctype html>
       <section class="band pipeline-band">
         <div class="section-title">
           <h2>系统流程</h2>
-          <p>系统首先将 POJ-104 处理为检索样本和代码对，再分别评估词法基线、双塔检索模型、Cross-Encoder 分类模型与混合重排序方法。</p>
+          <p>系统首先将 POJ-104 处理为语义检索样本，再分别评估词法基线、UniXcoder baseline 和本文优化后的 UniXcoder 方法。</p>
         </div>
         <div class="pipeline">
           <div>POJ-104</div>
-          <div>检索样本与代码对</div>
-          <div>TF-IDF · CodeBERT · GraphCodeBERT · UniXcoder</div>
-          <div>混合重排序</div>
+          <div>语义检索样本</div>
+          <div>TF-IDF · UniXcoder</div>
+          <div>SupCon CE 优化</div>
           <div>指标汇总与错误分析</div>
         </div>
       </section>
       <section class="band">
         <div class="section-title">
           <h2>方法概览</h2>
-          <p>检索模型负责快速召回候选代码，Cross-Encoder 负责代码对级别的精细判断，混合方法进一步融合两类模型信号。</p>
+          <p>页面聚焦 POJ-104 语义检索任务，对比词法基线、UniXcoder baseline、假负例修正和监督对比学习优化。</p>
         </div>
         <div id="methodCards" class="method-cards"></div>
       </section>
@@ -387,7 +731,7 @@ INDEX_HTML = """<!doctype html>
     <section id="metrics" class="view">
       <div class="section-title">
         <h2>实验指标</h2>
-        <p>语义检索任务主要关注 MAP@R、Recall 和 MRR；代码对分类任务主要关注 F1。</p>
+        <p>语义检索任务主要关注 MAP@R、Recall 和 MRR。</p>
       </div>
       <div id="metricHighlights" class="metric-highlights"></div>
       <section class="band visual-section">
@@ -402,13 +746,6 @@ INDEX_HTML = """<!doctype html>
               <span>越高越好</span>
             </div>
             <div id="retrievalChart" class="rank-chart"></div>
-          </article>
-          <article class="chart-panel">
-            <div class="chart-heading">
-              <h3>代码对分类 F1</h3>
-              <span>越高越好</span>
-            </div>
-            <div id="classificationChart" class="rank-chart"></div>
           </article>
         </div>
       </section>
@@ -430,44 +767,67 @@ INDEX_HTML = """<!doctype html>
           <tbody id="metricsRows"></tbody>
         </table>
       </div>
-      <section class="band">
-        <h2>困难负例消融</h2>
-        <div id="ablationViz" class="ablation-viz"></div>
-        <div id="ablationGrid" class="delta-grid"></div>
+    </section>
+
+    <section id="demo" class="view">
+      <div class="section-title">
+        <h2>示例推理</h2>
+        <p>选择已保存的双塔模型权重，在测试集候选池中检索与查询代码语义最接近的实现。</p>
+      </div>
+      <section class="demo-layout">
+        <div class="control-grid">
+          <label>
+            模型
+            <select id="modelSelect"></select>
+          </label>
+          <label>
+            示例
+            <select id="exampleSelect"></select>
+          </label>
+          <label>
+            Top-K
+            <input id="topKInput" type="number" min="1" max="12" value="5">
+          </label>
+          <label>
+            候选数
+            <input id="candidateInput" type="number" min="20" max="600" value="240">
+          </label>
+        </div>
+        <div class="demo-workspace">
+          <article class="query-panel">
+            <label>
+              待查代码
+              <textarea id="queryCode" spellcheck="false"></textarea>
+            </label>
+            <div class="code-preview">
+              <div class="code-heading">
+                <span>高亮预览</span>
+                <small id="queryMeta">-</small>
+              </div>
+              <pre><code id="queryPreview"></code></pre>
+            </div>
+          </article>
+          <article class="results-panel">
+            <div class="demo-actions">
+              <button id="runInfer" class="primary" type="button">运行检索</button>
+              <div id="inferResult" class="result-panel">请选择示例后运行。</div>
+            </div>
+            <div id="retrievalResults" class="retrieval-results"></div>
+          </article>
+        </div>
       </section>
     </section>
 
     <section id="errors" class="view">
       <div class="section-title">
         <h2>错误分析</h2>
-        <p>本页汇总模型在高词法相似负例、低词法相似正例、长代码截断和边界样本上的典型表现。</p>
+        <p>本页汇总语义检索模型在词法相似、实现风格差异和长代码样本上的典型表现。</p>
       </div>
       <div id="errorCards" class="error-cards"></div>
+      <div id="errorCategoryTabs" class="error-category-tabs"></div>
+      <div id="errorCaseGroups" class="error-case-groups"></div>
       <h2 class="detail-heading">详细说明</h2>
       <div id="errorAnalysis" class="markdown-panel"></div>
-    </section>
-
-    <section id="demo" class="view">
-      <div class="section-title">
-        <h2>代码对推理演示</h2>
-        <p>推理演示默认读取本地 <code>outputs/checkpoints</code>。若尚未同步模型文件，系统会保留结果展示功能，并在推理时提示需要同步的目录。</p>
-      </div>
-      <div class="demo-layout">
-        <label>
-          模型
-          <select id="modelSelect">
-            <option value="graphcodebert_cls">GraphCodeBERT</option>
-            <option value="codebert_cls">CodeBERT</option>
-            <option value="graphcodebert_hard_negatives">GraphCodeBERT + Hard Negatives</option>
-          </select>
-        </label>
-        <div class="editor-grid">
-          <label>代码片段 1<textarea id="code1" spellcheck="false">int main(){int a,b;cin&gt;&gt;a&gt;&gt;b;cout&lt;&lt;a+b;}</textarea></label>
-          <label>代码片段 2<textarea id="code2" spellcheck="false">int main(){long x,y;scanf("%ld%ld",&amp;x,&amp;y);printf("%ld",x+y);}</textarea></label>
-        </div>
-        <button id="runInfer" class="primary">运行推理</button>
-        <div id="inferResult" class="result-panel">输入两段代码后可进行语义等价判断。</div>
-      </div>
     </section>
   </main>
 
@@ -1147,9 +1507,151 @@ tbody tr:hover {
   line-height: 1.6;
 }
 
+.error-case-groups {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.error-category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.error-filter {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: var(--muted);
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.error-filter.is-active {
+  color: #fff;
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.error-case-group {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+.error-case-group > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: start;
+}
+
+.error-case-group h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.error-case-group p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.group-kind {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border: 1px solid rgba(40, 95, 174, 0.18);
+  border-radius: 999px;
+  color: var(--blue);
+  background: #eef4fb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.case-list {
+  display: grid;
+  gap: 12px;
+}
+
+.case-item {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-tint);
+}
+
+.case-item > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.case-item h4 {
+  margin: 0 0 5px;
+  font-size: 14px;
+}
+
+.case-item small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.case-badge {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--red);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.case-code-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.case-code {
+  min-width: 0;
+}
+
+.case-code span {
+  display: block;
+  margin-bottom: 6px;
+  color: #344254;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.case-code pre {
+  max-height: 250px;
+  margin: 0;
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12px;
+  line-height: 1.45;
+  tab-size: 2;
+}
+
 .demo-layout {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   padding: 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1157,7 +1659,7 @@ tbody tr:hover {
   box-shadow: var(--shadow-soft);
 }
 
-select, textarea {
+select, textarea, input {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1167,12 +1669,12 @@ select, textarea {
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
-select {
+select, input {
   max-width: 340px;
   padding: 10px;
 }
 
-select:focus, textarea:focus {
+select:focus, textarea:focus, input:focus {
   outline: none;
   border-color: rgba(40, 95, 174, 0.62);
   box-shadow: 0 0 0 4px rgba(40, 95, 174, 0.10);
@@ -1191,8 +1693,28 @@ label {
   gap: 14px;
 }
 
+.control-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.1fr) minmax(260px, 1.4fr) minmax(90px, 0.4fr) minmax(110px, 0.5fr);
+  gap: 14px;
+  align-items: end;
+}
+
+.demo-workspace {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.9fr) minmax(420px, 1.1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.query-panel, .results-panel {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
 textarea {
-  min-height: 260px;
+  min-height: 360px;
   resize: vertical;
   padding: 12px;
   font-family: "SFMono-Regular", Consolas, monospace;
@@ -1225,11 +1747,118 @@ textarea {
 }
 
 .result-panel {
-  min-height: 58px;
+  min-height: 68px;
   padding: 14px;
   white-space: pre-wrap;
   color: #2b3746;
   background: var(--panel-tint);
+}
+
+.demo-actions {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.retrieval-results {
+  display: grid;
+  gap: 12px;
+}
+
+.retrieval-item {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-tint);
+}
+
+.retrieval-item header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.retrieval-item h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.code-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: #edf3f6;
+  color: #344254;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.code-heading small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.code-preview pre, .retrieval-item pre {
+  max-height: 360px;
+  margin: 0;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: #fbfcfd;
+  font-size: 12px;
+  line-height: 1.45;
+  tab-size: 2;
+}
+
+.code-preview pre {
+  border-radius: 0 0 8px 8px;
+}
+
+.retrieval-item pre {
+  border-radius: 8px;
+}
+
+.code-preview code, .retrieval-item code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  color: #273345;
+}
+
+.tok-comment { color: #7a8492; font-style: italic; }
+.tok-string { color: #996414; }
+.tok-number { color: #9a4d98; }
+.tok-preproc { color: #286c8f; font-weight: 700; }
+.tok-keyword { color: #285fae; font-weight: 800; }
+.tok-type { color: #147765; font-weight: 800; }
+.tok-op { color: #b64e43; }
+
+.result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.match-badge {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--green);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.match-badge.is-negative {
+  background: var(--soft);
 }
 
 @media (max-width: 1120px) {
@@ -1240,7 +1869,7 @@ textarea {
   .header-status {
     justify-self: start;
   }
-  .hero-panel, .two-col {
+  .hero-panel, .two-col, .control-grid, .demo-workspace {
     grid-template-columns: 1fr;
   }
   .method-cards, .metric-highlights {
@@ -1249,10 +1878,16 @@ textarea {
   .viz-grid, .error-cards, .ablation-viz {
     grid-template-columns: 1fr;
   }
+  .case-code-grid {
+    grid-template-columns: 1fr;
+  }
+  .error-case-group > header {
+    display: grid;
+  }
 }
 
 @media (max-width: 860px) {
-  .editor-grid {
+  .editor-grid, .demo-actions {
     grid-template-columns: 1fr;
   }
   .tabs {
@@ -1297,12 +1932,17 @@ const hasLiveBackend = () => window.location.protocol === "http:" || window.loca
 const backendBootHint = "请使用 `python frontend\\\\app.py --port 8501` 启动本地服务，并在浏览器打开 `http://127.0.0.1:8501`。";
 
 const checkpointById = (modelId) => {
-  if (!state.summary?.checkpoints) return null;
+  if (!state.summary || !state.summary.checkpoints) return null;
   return state.summary.checkpoints.find((item) => item.checkpoint === modelId) || null;
 };
 
+const exampleById = (exampleId) => {
+  if (!state.summary || !state.summary.examples) return null;
+  return state.summary.examples.find((item) => item.id === exampleId) || null;
+};
+
 const inferErrorText = (response, data) => {
-  if (data?.error || data?.hint) {
+  if (data && (data.error || data.hint)) {
     return `${data.error || "推理失败。"}\n${data.hint || ""}`.trim();
   }
   if (!response.ok) {
@@ -1316,15 +1956,60 @@ const ERROR_SUMMARY = [
   ["低词法相似正例", "同一题目的代码可以使用完全不同的变量组织、分支结构和实现风格。"],
   ["长代码截断", "部分样本 token 数远超最大长度 512，模型可能无法观察完整逻辑。"],
   ["不同算法策略", "同一问题下可能存在通用算法、特殊样例处理或不同复杂度实现。"],
-  ["神经模型失误", "部分高 token 重合正例仍被 GraphCodeBERT 给出较低分数。"],
-  ["语义模型优势", "混合模型能在 TF-IDF top-1 失败时召回同题目代码，体现语义表示价值。"],
+  ["语义模型优势", "UniXcoder 能在 TF-IDF top-1 失败时召回同题目代码，体现语义表示价值。"],
+];
+
+const ERROR_KIND_ORDER = [
+  ["all", "全部"],
+  ["false_positive", "误报风险"],
+  ["false_negative", "漏召回风险"],
+  ["truncation", "长度限制"],
+  ["model_miss", "模型漏判"],
+  ["baseline_fail", "基线失败"],
 ];
 
 const escapeHtml = (text) => String(text)
-  .replaceAll("&", "&amp;")
-  .replaceAll("<", "&lt;")
-  .replaceAll(">", "&gt;")
-  .replaceAll('"', "&quot;");
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;");
+
+const CPP_KEYWORDS = new Set([
+  "alignas", "alignof", "asm", "auto", "break", "case", "catch", "class", "const", "constexpr",
+  "continue", "default", "delete", "do", "else", "enum", "explicit", "extern", "for", "friend",
+  "goto", "if", "inline", "namespace", "new", "operator", "private", "protected", "public",
+  "return", "sizeof", "static", "struct", "switch", "template", "this", "throw", "try", "typedef",
+  "typename", "using", "virtual", "while"
+]);
+
+const CPP_TYPES = new Set([
+  "bool", "char", "double", "float", "int", "long", "short", "signed", "unsigned", "void",
+  "wchar_t", "size_t", "string", "vector", "array", "map", "set", "queue", "stack", "cin", "cout",
+  "scanf", "printf", "gets", "strlen", "sort", "max", "min"
+]);
+
+const highlightCode = (code) => {
+  const pattern = new RegExp("(^\\\\s*#.*$)|//[^\\\\n]*|/[*][\\\\s\\\\S]*?[*]/|\\\"(?:\\\\\\\\.|[^\\\"\\\\\\\\])*\\\"|'(?:\\\\\\\\.|[^'\\\\\\\\])*'|\\\\b\\\\d+(?:[.]\\\\d+)?\\\\b|\\\\b[A-Za-z_]\\\\w*\\\\b|[{}()[\\\\];,.+\\\\-*\\\\/%=!<>&|?:]+|\\\\s+|.", "gm");
+  return String(code || "").replace(pattern, (token, preproc) => {
+    const safe = escapeHtml(token);
+    if (/^\s+$/.test(token)) return safe;
+    if (preproc) return `<span class="tok-preproc">${safe}</span>`;
+    if (token.startsWith("//") || token.startsWith("/*")) return `<span class="tok-comment">${safe}</span>`;
+    if (token.startsWith('"') || token.startsWith("'")) return `<span class="tok-string">${safe}</span>`;
+    if (/^\d/.test(token)) return `<span class="tok-number">${safe}</span>`;
+    if (/^[{}()[\];,.+\-*\/%=!<>&|?:]+$/.test(token)) return `<span class="tok-op">${safe}</span>`;
+    if (CPP_KEYWORDS.has(token)) return `<span class="tok-keyword">${safe}</span>`;
+    if (CPP_TYPES.has(token)) return `<span class="tok-type">${safe}</span>`;
+    return safe;
+  });
+};
+
+const renderQueryPreview = () => {
+  const code = document.getElementById("queryCode").value;
+  document.getElementById("queryPreview").innerHTML = highlightCode(code);
+  const lineCount = code ? code.split(String.fromCharCode(10)).length : 0;
+  document.getElementById("queryMeta").textContent = `${lineCount} lines · ${code.length} chars`;
+};
 
 const markdownLite = (text) => {
   const lines = String(text || "").split("\\n");
@@ -1363,7 +2048,7 @@ const renderRankChart = (targetId, methods, metricKey) => {
   const rows = methods
     .filter((method) => typeof (method.metrics || {})[metricKey] === "number")
     .sort((a, b) => b.metrics[metricKey] - a.metrics[metricKey]);
-  const best = rows[0]?.metrics[metricKey] || 1;
+  const best = rows[0] ? rows[0].metrics[metricKey] : 1;
   document.getElementById(targetId).innerHTML = rows.map((method, index) => {
     const value = method.metrics[metricKey];
     const width = Math.max(3, Math.min(100, value / best * 100));
@@ -1382,34 +2067,6 @@ const renderRankChart = (targetId, methods, metricKey) => {
   }).join("");
 };
 
-const renderAblationViz = (summary) => {
-  const before = summary.ablation.without_hard_negatives || {};
-  const after = summary.ablation.with_hard_negatives || {};
-  const keys = ["map@r", "recall@1", "recall@5", "recall@10", "mrr"];
-  document.getElementById("ablationViz").innerHTML = keys.map((key) => {
-    const beforeValue = typeof before[key] === "number" ? before[key] : 0;
-    const afterValue = typeof after[key] === "number" ? after[key] : 0;
-    const maxValue = Math.max(beforeValue, afterValue, 1);
-    return `
-      <article class="ablation-card">
-        <h3>${escapeHtml(key)}</h3>
-        <div class="paired-bars">
-          <div class="paired-row">
-            <span>原始</span>
-            <div class="paired-track"><div class="paired-fill" style="width:${Math.max(3, beforeValue / maxValue * 100)}%"></div></div>
-            <strong>${fmt(beforeValue)}</strong>
-          </div>
-          <div class="paired-row after">
-            <span>困难</span>
-            <div class="paired-track"><div class="paired-fill" style="width:${Math.max(3, afterValue / maxValue * 100)}%"></div></div>
-            <strong>${fmt(afterValue)}</strong>
-          </div>
-        </div>
-      </article>
-    `;
-  }).join("");
-};
-
 const renderErrorCards = () => {
   document.getElementById("errorCards").innerHTML = ERROR_SUMMARY.map(([title, body], index) => `
     <article class="error-card">
@@ -1420,13 +2077,81 @@ const renderErrorCards = () => {
   `).join("");
 };
 
+const renderCaseCode = (label, code) => `
+  <div class="case-code">
+    <span>${escapeHtml(label || "代码")}</span>
+    <pre><code>${highlightCode(code || "")}</code></pre>
+  </div>
+`;
+
+const renderCaseItem = (item) => {
+  const title = item.title || "案例";
+  const subtitle = item.subtitle || "";
+  const badge = item.badge || "案例";
+  const codeHtml = item.single_code
+    ? `<div class="case-code-grid">${renderCaseCode(item.single_label || "代码", item.single_code)}</div>`
+    : `<div class="case-code-grid">${renderCaseCode(item.left_label, item.left_code)}${renderCaseCode(item.right_label, item.right_code)}</div>`;
+  return `
+    <article class="case-item">
+      <header>
+        <div>
+          <h4>${escapeHtml(title)}</h4>
+          <small>${escapeHtml(subtitle)}</small>
+        </div>
+        <span class="case-badge">${escapeHtml(badge)}</span>
+      </header>
+      ${codeHtml}
+    </article>
+  `;
+};
+
+const renderErrorCaseGroups = (groups) => {
+  const target = document.getElementById("errorCaseGroups");
+  const tabs = document.getElementById("errorCategoryTabs");
+  const visibleGroups = (groups || []).filter((group) => group.cases && group.cases.length);
+  const counts = {};
+  visibleGroups.forEach((group) => {
+    counts[group.kind] = (counts[group.kind] || 0) + group.cases.length;
+  });
+  const total = visibleGroups.reduce((sum, group) => sum + group.cases.length, 0);
+  tabs.innerHTML = ERROR_KIND_ORDER.map(([kind, label], index) => {
+    const count = kind === "all" ? total : (counts[kind] || 0);
+    if (!count) return "";
+    return `<button class="error-filter ${index === 0 ? "is-active" : ""}" type="button" data-kind="${escapeHtml(kind)}">${escapeHtml(label)} · ${count}</button>`;
+  }).join("");
+  target.innerHTML = visibleGroups.map((group) => `
+    <section class="error-case-group" data-kind="${escapeHtml(group.kind || "")}">
+      <header>
+        <div>
+          <h3>${escapeHtml(group.title)}</h3>
+          <p>${escapeHtml(group.summary || "")}</p>
+        </div>
+        <span class="group-kind">${escapeHtml(group.kind_label || "错误类型")} · ${group.cases.length}</span>
+      </header>
+      <div class="case-list">
+        ${group.cases.map(renderCaseItem).join("")}
+      </div>
+    </section>
+  `).join("");
+  tabs.querySelectorAll(".error-filter").forEach((button) => {
+    button.addEventListener("click", () => {
+      const kind = button.dataset.kind;
+      tabs.querySelectorAll(".error-filter").forEach((item) => item.classList.toggle("is-active", item === button));
+      target.querySelectorAll(".error-case-group").forEach((group) => {
+        group.style.display = kind === "all" || group.dataset.kind === kind ? "grid" : "none";
+      });
+    });
+  });
+};
+
 const renderSummary = (summary) => {
   const bestRetrieval = summary.best_retrieval;
-  const bestClassifier = summary.best_classifier;
+  const baseline = summary.methods.find((method) => method.id === "unixcoder");
   document.getElementById("bestRetrieval").textContent = bestRetrieval ? bestRetrieval.name : "-";
   document.getElementById("bestRetrievalMeta").textContent = bestRetrieval ? `MAP@R ${fmt(bestRetrieval.metrics["map@r"])}` : "MAP@R";
-  document.getElementById("bestClassifier").textContent = bestClassifier ? bestClassifier.name : "-";
-  document.getElementById("bestClassifierMeta").textContent = bestClassifier ? `F1 ${fmt(bestClassifier.metrics.f1)}` : "F1";
+  const delta = bestRetrieval && baseline ? bestRetrieval.metrics["map@r"] - baseline.metrics["map@r"] : null;
+  document.getElementById("bestClassifier").textContent = typeof delta === "number" ? `+${fmt(delta)}` : "-";
+  document.getElementById("bestClassifierMeta").textContent = "vs UniXcoder MAP@R";
 
   const ready = summary.checkpoints.some((item) => item.looks_ready);
   document.getElementById("runMode").textContent = ready ? "可推理" : "展示";
@@ -1467,7 +2192,7 @@ const renderSummary = (summary) => {
 const renderMetrics = (summary) => {
   const highlights = [
     summary.best_retrieval,
-    summary.best_classifier,
+    summary.methods.find((method) => method.id === "label_aware"),
     summary.methods.find((method) => method.id === "tfidf"),
   ].filter(Boolean);
   document.getElementById("metricHighlights").innerHTML = highlights.map((method) => {
@@ -1483,8 +2208,6 @@ const renderMetrics = (summary) => {
   }).join("");
 
   renderRankChart("retrievalChart", summary.methods, "map@r");
-  renderRankChart("classificationChart", summary.methods, "f1");
-  renderAblationViz(summary);
 
   document.getElementById("metricsRows").innerHTML = summary.methods.map((method) => {
     const m = method.metrics || {};
@@ -1501,19 +2224,53 @@ const renderMetrics = (summary) => {
     </tr>`;
   }).join("");
 
-  const delta = summary.ablation.delta_with_minus_without || {};
-  const keys = ["map@r", "recall@1", "recall@5", "recall@10", "mrr"];
-  document.getElementById("ablationGrid").innerHTML = keys.map((key) => `
-    <div class="delta">
-      <span>${escapeHtml(key)}</span>
-      <strong>${fmt(delta[key])}</strong>
-    </div>
-  `).join("");
 };
 
 const renderErrors = (summary) => {
   renderErrorCards();
+  renderErrorCaseGroups(summary.error_case_groups);
   document.getElementById("errorAnalysis").innerHTML = markdownLite(summary.error_analysis);
+};
+
+const updateExampleCode = () => {
+  const select = document.getElementById("exampleSelect");
+  const example = exampleById(select.value);
+  if (!example) return;
+  document.getElementById("queryCode").value = example.query_code || "";
+  document.getElementById("retrievalResults").innerHTML = "";
+  document.getElementById("inferResult").textContent = `当前示例：${example.problem_id} · query ${example.query_id}`;
+  renderQueryPreview();
+};
+
+const renderDemo = (summary) => {
+  const modelSelect = document.getElementById("modelSelect");
+  const exampleSelect = document.getElementById("exampleSelect");
+  modelSelect.innerHTML = (summary.inference_models || []).map((item) => `
+    <option value="${escapeHtml(item.checkpoint)}">${escapeHtml(item.name)}</option>
+  `).join("");
+  exampleSelect.innerHTML = (summary.examples || []).map((item) => `
+    <option value="${escapeHtml(item.id)}">${escapeHtml(item.title)}</option>
+  `).join("");
+  updateExampleCode();
+};
+
+const renderRetrievalResults = (data) => {
+  const target = document.getElementById("retrievalResults");
+  target.innerHTML = (data.results || []).map((item) => `
+    <article class="retrieval-item">
+      <header>
+        <div>
+          <h3>#${item.rank} · ${escapeHtml(item.id)}</h3>
+          <div class="result-meta">
+            <span>${escapeHtml(item.problem_id)}</span>
+            <span>score ${fmt(item.score)}</span>
+          </div>
+        </div>
+        <span class="match-badge ${item.is_same_problem ? "" : "is-negative"}">${item.is_same_problem ? "同题命中" : "非同题"}</span>
+      </header>
+      <pre><code>${highlightCode(item.code)}</code></pre>
+    </article>
+  `).join("");
 };
 
 const runInfer = async () => {
@@ -1530,15 +2287,18 @@ const runInfer = async () => {
     return;
   }
   button.disabled = true;
-  result.textContent = "模型加载中，首次推理可能会慢一些。";
+  document.getElementById("retrievalResults").innerHTML = "";
+  result.textContent = "模型加载和编码中，首次运行会慢一些。";
   try {
     const response = await fetch("/api/infer", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: modelId,
-        code1: document.getElementById("code1").value,
-        code2: document.getElementById("code2").value
+        example_id: document.getElementById("exampleSelect").value,
+        code: document.getElementById("queryCode").value,
+        top_k: document.getElementById("topKInput").value,
+        max_candidates: document.getElementById("candidateInput").value
       })
     });
     let data = null;
@@ -1547,11 +2307,13 @@ const runInfer = async () => {
     } catch (error) {
       data = null;
     }
-    if (!response.ok || !data?.ok) {
+    if (!response.ok || !data || !data.ok) {
       result.textContent = inferErrorText(response, data);
       return;
     }
-    result.textContent = `预测结果：${data.label}\\n语义等价概率：${data.semantic_equivalence_score.toFixed(4)}\\n运行设备：${data.device}\\n模型路径：${data.checkpoint}`;
+    const hits = (data.results || []).filter((item) => item.is_same_problem).length;
+    result.textContent = `检索完成：Top-${data.top_k} 中同题命中 ${hits} 个\\n候选数量：${data.candidate_count}\\n运行设备：${data.device}\\n模型路径：${data.checkpoint}`;
+    renderRetrievalResults(data);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     result.textContent = `无法连接推理接口。\n${backendBootHint}\n原始错误：${message}`;
@@ -1561,24 +2323,55 @@ const runInfer = async () => {
 };
 
 document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => setView(tab.dataset.view)));
-document.getElementById("runInfer").addEventListener("click", runInfer);
+
+const showBootError = (error) => {
+    const message = error instanceof Error ? error.stack || error.message : String(error);
+    const status = document.getElementById("headerStatus");
+    if (status) status.textContent = "加载失败";
+    const main = document.querySelector("main");
+    if (main) {
+      main.insertAdjacentHTML(
+        "afterbegin",
+        `<div class="markdown-panel"><h2>页面初始化失败</h2><pre>${escapeHtml(message)}</pre></div>`
+      );
+    }
+};
 
 const boot = (summary) => {
     state.summary = summary;
     renderSummary(summary);
     renderMetrics(summary);
     renderErrors(summary);
+    renderDemo(summary);
+    document.getElementById("exampleSelect").addEventListener("change", updateExampleCode);
+    document.getElementById("queryCode").addEventListener("input", renderQueryPreview);
+    document.getElementById("runInfer").addEventListener("click", runInfer);
+};
+
+const safeBoot = (summary) => {
+  try {
+    boot(summary);
+  } catch (error) {
+    showBootError(error);
+  }
+};
+
+const fetchSummary = async () => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch("/api/summary", { signal: controller.signal, cache: "no-store" });
+    if (!response.ok) throw new Error(`summary 接口返回 HTTP ${response.status}`);
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
 };
 
 if (window.__SUMMARY__) {
-  boot(window.__SUMMARY__);
+  safeBoot(window.__SUMMARY__);
 } else {
-  fetch("/api/summary")
-    .then((response) => response.json())
-    .then(boot)
-    .catch((error) => {
-      document.body.insertAdjacentHTML("afterbegin", `<pre>${escapeHtml(error)}</pre>`);
-    });
+  fetchSummary().then(safeBoot).catch(showBootError);
 }
 """
 

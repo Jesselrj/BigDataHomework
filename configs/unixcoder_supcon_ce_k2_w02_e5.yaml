@@ -1,0 +1,6 @@
+inherits: configs/unixcoder_supcon_ce_k2_w02.yaml
+experiment_name: unixcoder_supcon_ce_k2_w02_e5
+num_epochs: 5
+checkpoint_dir: outputs/checkpoints/unixcoder_supcon_ce_k2_w02_e5
+embedding_file: outputs/predictions/unixcoder_supcon_ce_k2_w02_e5_test_embeddings.npz
+result_file: outputs/results/unixcoder_supcon_ce_k2_w02_e5_results.json

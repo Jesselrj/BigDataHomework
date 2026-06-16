@@ -1,0 +1,7 @@
+2026-06-16 18:54:19,070 INFO environment={"hostname": "h100", "cwd": "/home/lrj/BIG/semantic-code-reuse", "CUDA_VISIBLE_DEVICES": "3", "HF_ENDPOINT": "https://huggingface.co", "torch_cuda_available": true, "torch_cuda_device_count": 1, "torch_cuda_current_device": 0, "torch_cuda_device_name_0": "NVIDIA A100-SXM-64GB"}
+/home/lrj/envs/semantic-code-reuse/lib/python3.10/site-packages/transformers/tokenization_utils_base.py:1601: FutureWarning: `clean_up_tokenization_spaces` was not set. It will be set to `True` by default. This behavior will be depracted in transformers v4.45, and will be then set to `False` by default. For more details check this issue: https://github.com/huggingface/transformers/issues/31884
+  warnings.warn(
+2026-06-16 19:00:26,576 INFO epoch=0 train_loss=0.164719
+2026-06-16 19:06:29,741 INFO epoch=1 train_loss=0.028123
+2026-06-16 19:12:32,884 INFO epoch=2 train_loss=0.019037
+2026-06-16 19:13:59,866 INFO test_metrics={'recall@1': 0.9979166666666667, 'recall@5': 0.999, 'recall@10': 0.9990833333333333, 'mrr': 0.9983720449295501, 'map@r': 0.9143600027133052, 'num_queries': 12000.0, 'method': 'unixcoder_label_aware_balanced_k4', 'checkpoint': 'outputs/checkpoints/unixcoder_label_aware_balanced_k4', 'runtime_seconds': 1176.8784880638123}

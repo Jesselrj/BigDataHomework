@@ -1,0 +1,6 @@
+inherits: configs/unixcoder_label_aware_balanced_k4.yaml
+experiment_name: unixcoder_label_aware_balanced_k4_e5
+num_epochs: 5
+checkpoint_dir: outputs/checkpoints/unixcoder_label_aware_balanced_k4_e5
+embedding_file: outputs/predictions/unixcoder_label_aware_balanced_k4_e5_test_embeddings.npz
+result_file: outputs/results/unixcoder_label_aware_balanced_k4_e5_results.json

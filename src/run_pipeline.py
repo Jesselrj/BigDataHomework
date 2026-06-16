@@ -29,13 +29,9 @@ def make_debug_data() -> None:
 def write_final_table() -> None:
     result_specs = [
         ("TF-IDF", "Retrieval", "outputs/results/tfidf_results.json", "Lexical baseline"),
-        ("CodeBERT", "Classification", "outputs/results/codebert_cls_results.json", "Pair classifier"),
-        ("GraphCodeBERT", "Classification", "outputs/results/graphcodebert_cls_results.json", "Pair classifier"),
         ("UniXcoder", "Retrieval", "outputs/results/unixcoder_retrieval_results.json", "Baseline dual encoder"),
         ("UniXcoder + Label-aware Loss", "Retrieval", "outputs/results/unixcoder_label_aware_results.json", "Ours: mask same-problem false negatives"),
         ("UniXcoder + SupCon CE (k=2)", "Retrieval", "outputs/results/unixcoder_supcon_ce_k2_w02_results.json", "Ours: supervised contrastive training with class proxy"),
-        ("UniXcoder + GraphCodeBERT", "Retrieval + Rerank", "outputs/results/hybrid_rerank_results.json", "Hybrid method"),
-        ("Hybrid + Hard Negatives", "Retrieval + Rerank", "outputs/results/hybrid_rerank_hard_results.json", "Ablation"),
     ]
     rows = []
     for method, task, path, notes in result_specs:
@@ -47,40 +43,15 @@ def write_final_table() -> None:
     Path("outputs/results/final_results.md").write_text(final_results_table(rows), encoding="utf-8")
 
 
-def write_ablation() -> None:
-    without = _read_result_if_exists("outputs/results/hybrid_rerank_results.json")
-    with_hard = _read_result_if_exists("outputs/results/hybrid_rerank_hard_results.json")
-    out = {
-        "without_hard_negatives": without,
-        "with_hard_negatives": with_hard,
-        "delta_with_minus_without": {
-            key: with_hard[key] - without[key]
-            for key in ("map@r", "recall@1", "recall@5", "recall@10", "mrr")
-            if isinstance(without.get(key), (int, float)) and isinstance(with_hard.get(key), (int, float))
-        },
-    }
-    Path("outputs/results").mkdir(parents=True, exist_ok=True)
-    Path("outputs/results/hard_negative_ablation.json").write_text(__import__("json").dumps(out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-
-
-def _read_result_if_exists(path: str) -> dict:
-    if Path(path).exists():
-        return read_json(path)
-    return {"status": "missing", "path": path}
-
-
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--make-debug-data", action="store_true")
     parser.add_argument("--write-final-table", action="store_true")
-    parser.add_argument("--write-ablation", action="store_true")
     args = parser.parse_args()
     if args.make_debug_data:
         make_debug_data()
     if args.write_final_table:
         write_final_table()
-    if args.write_ablation:
-        write_ablation()
 
 
 if __name__ == "__main__":

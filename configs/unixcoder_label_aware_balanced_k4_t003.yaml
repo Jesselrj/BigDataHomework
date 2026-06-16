@@ -1,0 +1,6 @@
+inherits: configs/unixcoder_label_aware_balanced_k4.yaml
+experiment_name: unixcoder_label_aware_balanced_k4_t003
+temperature: 0.03
+checkpoint_dir: outputs/checkpoints/unixcoder_label_aware_balanced_k4_t003
+embedding_file: outputs/predictions/unixcoder_label_aware_balanced_k4_t003_test_embeddings.npz
+result_file: outputs/results/unixcoder_label_aware_balanced_k4_t003_results.json

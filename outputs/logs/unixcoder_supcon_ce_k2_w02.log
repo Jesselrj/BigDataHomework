@@ -1,0 +1,5 @@
+2026-06-16 19:41:49,986 INFO environment={"hostname": "h100", "cwd": "/home/lrj/BIG/semantic-code-reuse", "CUDA_VISIBLE_DEVICES": "2", "HF_ENDPOINT": "https://huggingface.co", "torch_cuda_available": true, "torch_cuda_device_count": 1, "torch_cuda_current_device": 0, "torch_cuda_device_name_0": "NVIDIA RTX PRO 6000 Blackwell Server Edition"}
+2026-06-16 19:44:29,526 INFO epoch=0 train_loss=1.361279
+2026-06-16 19:47:04,984 INFO epoch=1 train_loss=0.897906
+2026-06-16 19:49:40,546 INFO epoch=2 train_loss=0.860417
+2026-06-16 19:50:29,745 INFO test_metrics={'recall@1': 0.9980833333333333, 'recall@5': 0.9990833333333333, 'recall@10': 0.9995833333333334, 'mrr': 0.9985740069684301, 'map@r': 0.9254381365513417, 'num_queries': 12000.0, 'method': 'unixcoder_supcon_ce_k2_w02', 'checkpoint': 'outputs/checkpoints/unixcoder_supcon_ce_k2_w02', 'runtime_seconds': 516.5354022979736}

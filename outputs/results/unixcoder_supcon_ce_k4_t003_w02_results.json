@@ -1,0 +1,11 @@
+{
+  "recall@1": 0.998,
+  "recall@5": 0.99925,
+  "recall@10": 0.9993333333333333,
+  "mrr": 0.9985688022551189,
+  "map@r": 0.9104332239562846,
+  "num_queries": 12000.0,
+  "method": "unixcoder_supcon_ce_k4_t003_w02",
+  "checkpoint": "outputs/checkpoints/unixcoder_supcon_ce_k4_t003_w02",
+  "runtime_seconds": 649.4050960540771
+}

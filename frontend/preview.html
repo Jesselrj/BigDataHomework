@@ -674,9 +674,151 @@ tbody tr:hover {
   line-height: 1.6;
 }
 
+.error-case-groups {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.error-category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.error-filter {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: var(--muted);
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.error-filter.is-active {
+  color: #fff;
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.error-case-group {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+.error-case-group > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: start;
+}
+
+.error-case-group h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.error-case-group p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.group-kind {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border: 1px solid rgba(40, 95, 174, 0.18);
+  border-radius: 999px;
+  color: var(--blue);
+  background: #eef4fb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.case-list {
+  display: grid;
+  gap: 12px;
+}
+
+.case-item {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-tint);
+}
+
+.case-item > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.case-item h4 {
+  margin: 0 0 5px;
+  font-size: 14px;
+}
+
+.case-item small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.case-badge {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--red);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.case-code-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.case-code {
+  min-width: 0;
+}
+
+.case-code span {
+  display: block;
+  margin-bottom: 6px;
+  color: #344254;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.case-code pre {
+  max-height: 250px;
+  margin: 0;
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 12px;
+  line-height: 1.45;
+  tab-size: 2;
+}
+
 .demo-layout {
   display: grid;
-  gap: 14px;
+  gap: 16px;
   padding: 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -684,7 +826,7 @@ tbody tr:hover {
   box-shadow: var(--shadow-soft);
 }
 
-select, textarea {
+select, textarea, input {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -694,12 +836,12 @@ select, textarea {
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
-select {
+select, input {
   max-width: 340px;
   padding: 10px;
 }
 
-select:focus, textarea:focus {
+select:focus, textarea:focus, input:focus {
   outline: none;
   border-color: rgba(40, 95, 174, 0.62);
   box-shadow: 0 0 0 4px rgba(40, 95, 174, 0.10);
@@ -718,8 +860,28 @@ label {
   gap: 14px;
 }
 
+.control-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.1fr) minmax(260px, 1.4fr) minmax(90px, 0.4fr) minmax(110px, 0.5fr);
+  gap: 14px;
+  align-items: end;
+}
+
+.demo-workspace {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.9fr) minmax(420px, 1.1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.query-panel, .results-panel {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
 textarea {
-  min-height: 260px;
+  min-height: 360px;
   resize: vertical;
   padding: 12px;
   font-family: "SFMono-Regular", Consolas, monospace;
@@ -752,11 +914,118 @@ textarea {
 }
 
 .result-panel {
-  min-height: 58px;
+  min-height: 68px;
   padding: 14px;
   white-space: pre-wrap;
   color: #2b3746;
   background: var(--panel-tint);
+}
+
+.demo-actions {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.retrieval-results {
+  display: grid;
+  gap: 12px;
+}
+
+.retrieval-item {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-tint);
+}
+
+.retrieval-item header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.retrieval-item h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.code-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: #edf3f6;
+  color: #344254;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.code-heading small {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.code-preview pre, .retrieval-item pre {
+  max-height: 360px;
+  margin: 0;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: #fbfcfd;
+  font-size: 12px;
+  line-height: 1.45;
+  tab-size: 2;
+}
+
+.code-preview pre {
+  border-radius: 0 0 8px 8px;
+}
+
+.retrieval-item pre {
+  border-radius: 8px;
+}
+
+.code-preview code, .retrieval-item code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  color: #273345;
+}
+
+.tok-comment { color: #7a8492; font-style: italic; }
+.tok-string { color: #996414; }
+.tok-number { color: #9a4d98; }
+.tok-preproc { color: #286c8f; font-weight: 700; }
+.tok-keyword { color: #285fae; font-weight: 800; }
+.tok-type { color: #147765; font-weight: 800; }
+.tok-op { color: #b64e43; }
+
+.result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.match-badge {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--green);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.match-badge.is-negative {
+  background: var(--soft);
 }
 
 @media (max-width: 1120px) {
@@ -767,7 +1036,7 @@ textarea {
   .header-status {
     justify-self: start;
   }
-  .hero-panel, .two-col {
+  .hero-panel, .two-col, .control-grid, .demo-workspace {
     grid-template-columns: 1fr;
   }
   .method-cards, .metric-highlights {
@@ -776,10 +1045,16 @@ textarea {
   .viz-grid, .error-cards, .ablation-viz {
     grid-template-columns: 1fr;
   }
+  .case-code-grid {
+    grid-template-columns: 1fr;
+  }
+  .error-case-group > header {
+    display: grid;
+  }
 }
 
 @media (max-width: 860px) {
-  .editor-grid {
+  .editor-grid, .demo-actions {
     grid-template-columns: 1fr;
   }
   .tabs {
@@ -812,8 +1087,8 @@ textarea {
     <nav class="tabs" aria-label="Main navigation">
       <button class="tab is-active" data-view="overview">总览</button>
       <button class="tab" data-view="metrics">指标</button>
+      <button class="tab" data-view="demo">示例推理</button>
       <button class="tab" data-view="errors">错误分析</button>
-      <button class="tab" data-view="demo">推理演示</button>
     </nav>
     <div id="headerStatus" class="header-status">加载中</div>
   </header>
@@ -833,9 +1108,9 @@ textarea {
             <small id="bestRetrievalMeta">MAP@R</small>
           </article>
           <article class="summary-block accent-blue">
-            <span>最佳分类</span>
+            <span>优化提升</span>
             <strong id="bestClassifier">-</strong>
-            <small id="bestClassifierMeta">F1</small>
+            <small id="bestClassifierMeta">vs UniXcoder</small>
           </article>
           <article class="summary-block accent-red">
             <span>运行模式</span>
@@ -847,20 +1122,20 @@ textarea {
       <section class="band pipeline-band">
         <div class="section-title">
           <h2>系统流程</h2>
-          <p>系统首先将 POJ-104 处理为检索样本和代码对，再分别评估词法基线、双塔检索模型、Cross-Encoder 分类模型与混合重排序方法。</p>
+          <p>系统首先将 POJ-104 处理为语义检索样本，再分别评估词法基线、UniXcoder baseline 和本文优化后的 UniXcoder 方法。</p>
         </div>
         <div class="pipeline">
           <div>POJ-104</div>
-          <div>检索样本与代码对</div>
-          <div>TF-IDF · CodeBERT · GraphCodeBERT · UniXcoder</div>
-          <div>混合重排序</div>
+          <div>语义检索样本</div>
+          <div>TF-IDF · UniXcoder</div>
+          <div>SupCon CE 优化</div>
           <div>指标汇总与错误分析</div>
         </div>
       </section>
       <section class="band">
         <div class="section-title">
           <h2>方法概览</h2>
-          <p>检索模型负责快速召回候选代码，Cross-Encoder 负责代码对级别的精细判断，混合方法进一步融合两类模型信号。</p>
+          <p>页面聚焦 POJ-104 语义检索任务，对比词法基线、UniXcoder baseline、假负例修正和监督对比学习优化。</p>
         </div>
         <div id="methodCards" class="method-cards"></div>
       </section>
@@ -875,7 +1150,7 @@ textarea {
     <section id="metrics" class="view">
       <div class="section-title">
         <h2>实验指标</h2>
-        <p>语义检索任务主要关注 MAP@R、Recall 和 MRR；代码对分类任务主要关注 F1。</p>
+        <p>语义检索任务主要关注 MAP@R、Recall 和 MRR。</p>
       </div>
       <div id="metricHighlights" class="metric-highlights"></div>
       <section class="band visual-section">
@@ -890,13 +1165,6 @@ textarea {
               <span>越高越好</span>
             </div>
             <div id="retrievalChart" class="rank-chart"></div>
-          </article>
-          <article class="chart-panel">
-            <div class="chart-heading">
-              <h3>代码对分类 F1</h3>
-              <span>越高越好</span>
-            </div>
-            <div id="classificationChart" class="rank-chart"></div>
           </article>
         </div>
       </section>
@@ -918,48 +1186,71 @@ textarea {
           <tbody id="metricsRows"></tbody>
         </table>
       </div>
-      <section class="band">
-        <h2>困难负例消融</h2>
-        <div id="ablationViz" class="ablation-viz"></div>
-        <div id="ablationGrid" class="delta-grid"></div>
+    </section>
+
+    <section id="demo" class="view">
+      <div class="section-title">
+        <h2>示例推理</h2>
+        <p>选择已保存的双塔模型权重，在测试集候选池中检索与查询代码语义最接近的实现。</p>
+      </div>
+      <section class="demo-layout">
+        <div class="control-grid">
+          <label>
+            模型
+            <select id="modelSelect"></select>
+          </label>
+          <label>
+            示例
+            <select id="exampleSelect"></select>
+          </label>
+          <label>
+            Top-K
+            <input id="topKInput" type="number" min="1" max="12" value="5">
+          </label>
+          <label>
+            候选数
+            <input id="candidateInput" type="number" min="20" max="600" value="240">
+          </label>
+        </div>
+        <div class="demo-workspace">
+          <article class="query-panel">
+            <label>
+              待查代码
+              <textarea id="queryCode" spellcheck="false"></textarea>
+            </label>
+            <div class="code-preview">
+              <div class="code-heading">
+                <span>高亮预览</span>
+                <small id="queryMeta">-</small>
+              </div>
+              <pre><code id="queryPreview"></code></pre>
+            </div>
+          </article>
+          <article class="results-panel">
+            <div class="demo-actions">
+              <button id="runInfer" class="primary" type="button">运行检索</button>
+              <div id="inferResult" class="result-panel">请选择示例后运行。</div>
+            </div>
+            <div id="retrievalResults" class="retrieval-results"></div>
+          </article>
+        </div>
       </section>
     </section>
 
     <section id="errors" class="view">
       <div class="section-title">
         <h2>错误分析</h2>
-        <p>本页汇总模型在高词法相似负例、低词法相似正例、长代码截断和边界样本上的典型表现。</p>
+        <p>本页汇总语义检索模型在词法相似、实现风格差异和长代码样本上的典型表现。</p>
       </div>
       <div id="errorCards" class="error-cards"></div>
+      <div id="errorCategoryTabs" class="error-category-tabs"></div>
+      <div id="errorCaseGroups" class="error-case-groups"></div>
       <h2 class="detail-heading">详细说明</h2>
       <div id="errorAnalysis" class="markdown-panel"></div>
     </section>
-
-    <section id="demo" class="view">
-      <div class="section-title">
-        <h2>代码对推理演示</h2>
-        <p>推理演示默认读取本地 <code>outputs/checkpoints</code>。若尚未同步模型文件，系统会保留结果展示功能，并在推理时提示需要同步的目录。</p>
-      </div>
-      <div class="demo-layout">
-        <label>
-          模型
-          <select id="modelSelect">
-            <option value="graphcodebert_cls">GraphCodeBERT</option>
-            <option value="codebert_cls">CodeBERT</option>
-            <option value="graphcodebert_hard_negatives">GraphCodeBERT + Hard Negatives</option>
-          </select>
-        </label>
-        <div class="editor-grid">
-          <label>代码片段 1<textarea id="code1" spellcheck="false">int main(){int a,b;cin&gt;&gt;a&gt;&gt;b;cout&lt;&lt;a+b;}</textarea></label>
-          <label>代码片段 2<textarea id="code2" spellcheck="false">int main(){long x,y;scanf("%ld%ld",&amp;x,&amp;y);printf("%ld",x+y);}</textarea></label>
-        </div>
-        <button id="runInfer" class="primary">运行推理</button>
-        <div id="inferResult" class="result-panel">输入两段代码后可进行语义等价判断。</div>
-      </div>
-    </section>
   </main>
 
-  <script>window.__SUMMARY__ = {"project_root": "F:\\桌面\\大数据\\大作业\\BigDataHomework", "results_dir": "F:\\桌面\\大数据\\大作业\\BigDataHomework\\outputs\\results", "checkpoint_root": "F:\\桌面\\大数据\\大作业\\BigDataHomework\\outputs\\checkpoints", "methods": [{"id": "tfidf", "name": "TF-IDF", "task": "语义检索", "file": "tfidf_results.json", "notes": "词法相似度基线方法", "metrics": {"recall@1": 0.8076666666666666, "recall@5": 0.914, "recall@10": 0.9486666666666667, "mrr": 0.8560613059081037, "map@r": 0.21688534237171136, "num_queries": 12000.0, "method": "TF-IDF"}}, {"id": "codebert", "name": "CodeBERT", "task": "代码对分类", "file": "codebert_cls_results.json", "notes": "预训练代码模型二分类器", "checkpoint": "codebert_cls", "metrics": {"accuracy": 0.9107291666666667, "precision": 0.9014457340663816, "recall": 0.9222916666666666, "f1": 0.9117495623519719, "auc": 0.9728575086805555, "method": "codebert_cls", "checkpoint": "outputs/checkpoints/codebert_cls", "runtime_seconds": 539.3343379497528}}, {"id": "graphcodebert", "name": "GraphCodeBERT", "task": "代码对分类", "file": "graphcodebert_cls_results.json", "notes": "代码对分类器，并作为混合方法中的重排序模型", "checkpoint": "graphcodebert_cls", "metrics": {"accuracy": 0.9154166666666667, "precision": 0.9000802568218299, "recall": 0.9345833333333333, "f1": 0.9170073589533932, "auc": 0.9741462239583333, "method": "graphcodebert_cls", "checkpoint": "outputs/checkpoints/graphcodebert_cls", "runtime_seconds": 539.3315801620483}}, {"id": "unixcoder", "name": "UniXcoder", "task": "语义检索", "file": "unixcoder_retrieval_results.json", "notes": "双塔语义检索模型", "checkpoint": "unixcoder_retrieval", "metrics": {"recall@1": 0.9975833333333334, "recall@5": 0.9988333333333334, "recall@10": 0.99925, "mrr": 0.9982039599004038, "map@r": 0.9098223936303266, "num_queries": 12000.0, "method": "unixcoder_retrieval", "checkpoint": "outputs/checkpoints/unixcoder_retrieval", "runtime_seconds": 952.658403635025}}, {"id": "hybrid", "name": "UniXcoder + GraphCodeBERT", "task": "检索与重排序", "file": "hybrid_rerank_results.json", "notes": "先召回候选，再进行代码对级别重排序", "metrics": {"recall@1": 0.9979166666666667, "recall@5": 0.9989166666666667, "recall@10": 0.9991666666666666, "mrr": 0.9983925811010229, "map@r": 0.9052507356470918, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}}, {"id": "hybrid_hard", "name": "Hybrid + Hard Negatives", "task": "困难负例消融", "file": "hybrid_rerank_hard_results.json", "notes": "加入随机、词法相似、长度结构相似负例后的消融结果", "metrics": {"recall@1": 0.9978333333333333, "recall@5": 0.9983333333333333, "recall@10": 0.9985833333333334, "mrr": 0.9980943753864144, "map@r": 0.888414078557124, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}}], "best_retrieval": {"id": "unixcoder", "name": "UniXcoder", "task": "语义检索", "file": "unixcoder_retrieval_results.json", "notes": "双塔语义检索模型", "checkpoint": "unixcoder_retrieval", "metrics": {"recall@1": 0.9975833333333334, "recall@5": 0.9988333333333334, "recall@10": 0.99925, "mrr": 0.9982039599004038, "map@r": 0.9098223936303266, "num_queries": 12000.0, "method": "unixcoder_retrieval", "checkpoint": "outputs/checkpoints/unixcoder_retrieval", "runtime_seconds": 952.658403635025}}, "best_classifier": {"id": "graphcodebert", "name": "GraphCodeBERT", "task": "代码对分类", "file": "graphcodebert_cls_results.json", "notes": "代码对分类器，并作为混合方法中的重排序模型", "checkpoint": "graphcodebert_cls", "metrics": {"accuracy": 0.9154166666666667, "precision": 0.9000802568218299, "recall": 0.9345833333333333, "f1": 0.9170073589533932, "auc": 0.9741462239583333, "method": "graphcodebert_cls", "checkpoint": "outputs/checkpoints/graphcodebert_cls", "runtime_seconds": 539.3315801620483}}, "ablation": {"without_hard_negatives": {"recall@1": 0.9979166666666667, "recall@5": 0.9989166666666667, "recall@10": 0.9991666666666666, "mrr": 0.9983925811010229, "map@r": 0.9052507356470918, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}, "with_hard_negatives": {"recall@1": 0.9978333333333333, "recall@5": 0.9983333333333333, "recall@10": 0.9985833333333334, "mrr": 0.9980943753864144, "map@r": 0.888414078557124, "num_queries": 12000.0, "method": "UniXcoder + GraphCodeBERT", "alpha": 0.4, "beta": 0.6, "top_k": 100}, "delta_with_minus_without": {"map@r": -0.016836657089967844, "recall@1": -8.333333333332416e-05, "recall@5": -0.0005833333333333801, "recall@10": -0.0005833333333332691, "mrr": -0.00029820571460847933}}, "error_analysis": "## 7. 错误分析\n\n错误分析脚本对混合方法预测结果进行了样本级检查，覆盖了六类典型情况。\n\n第一类是高词法相似但语义不同的代码对。例如 `problem_4` 与 `problem_52`、`problem_10` 与 `problem_15` 中存在 TF-IDF 分数接近 1.0 的代码对，但它们实际解决不同问题。这说明仅依赖词法相似性容易把结构模板相似、变量和循环形式相近的程序误判为语义等价。\n\n第二类是低词法相似但语义相同的代码对。例如 `problem_100` 中样本 `test_9553` 与 `test_9811` 的 token Jaccard 仅为 0.1518，但二者属于同一问题。这类样本说明语义等价代码可以采用完全不同的变量组织、分支写法和实现风格，词法方法难以稳定识别。\n\n第三类是超长代码被截断的情况。部分 `problem_100` 样本 token 数超过 2,000，而模型最大长度为 512。长代码截断可能导致模型无法看到完整逻辑，尤其是当关键判断或输出逻辑出现在后半部分时，会影响分类和重排序。\n\n第四类是同一问题下不同算法策略的实现。例如同一题目中既可能出现通用算法实现，也可能出现针对输入范围或特定样例的特殊写法。这类样本在 token overlap 上很低，但语义标签相同，是 Type-4 克隆检测的核心难点。\n\n第五类是 TF-IDF 可能成功但神经模型失败的样本。错误分析中发现 GraphCodeBERT 对若干高 token Jaccard 的正例给出较低分数，例如 `problem_86` 中某正例对 token Jaccard 为 0.7609，但 GraphCodeBERT 分数仅为 0.1865。这说明神经模型并非总是优于词法方法，在部分高词面重合正例上也可能出现 false negative。\n\n第六类是神经模型成功但 TF-IDF 失败的样本。例如 `problem_81` 中多个 query 的混合模型 Top-1 结果正确，而 TF-IDF Top-1 检索到了 `problem_82`、`problem_84` 或 `problem_85` 的代码。这说明预训练语义模型能够在一定程度上摆脱表层 token 相似性的限制。\n\n总体来看，错误分析证明两阶段混合方法在大多数语义检索场景下表现稳定，但仍受限于输入长度、训练负例构造方式和 Cross-Encoder 对部分边界样本的判断能力。", "final_table": "| Method | Task | MAP@R | Recall@1 | Recall@5 | Recall@10 | MRR | F1 | Notes |\n|---|---|---:|---:|---:|---:|---:|---:|---|\n| TF-IDF | Retrieval | 0.2169 | 0.8077 | 0.9140 | 0.9487 | 0.8561 | - | Lexical baseline |\n| CodeBERT | Classification | - | - | - | - | - | 0.9117 | Pair classifier |\n| GraphCodeBERT | Classification | - | - | - | - | - | 0.9170 | Pair classifier |\n| UniXcoder | Retrieval | 0.9098 | 0.9976 | 0.9988 | 0.9993 | 0.9982 | - | Local baseline dual encoder |\n| UniXcoder + Label-aware Loss | Retrieval | 0.9117 | 0.9982 | 0.9989 | 0.9992 | 0.9986 | - | Ours: mask same-problem false negatives |\n| UniXcoder + GraphCodeBERT | Retrieval + Rerank | 0.9053 | 0.9979 | 0.9989 | 0.9992 | 0.9984 | - | Hybrid method |\n| Hybrid + Hard Negatives | Retrieval + Rerank | 0.8884 | 0.9978 | 0.9983 | 0.9986 | 0.9981 | - | Ablation |\n| UniXcoder (paper) | POJ-104 / BCB | 0.9052 | - | - | - | - | 0.9520 | Paper metrics: BCB R=0.9290, P=0.9760 |\n| UniXcoder + Label-aware Loss (paper POJ setting) | POJ-104 | 0.8931 | 0.9959 | 0.9984 | 0.9989 | 0.9969 | - | Ours, POJ train only |\n| UniXcoder + Label-aware Loss (POJ+BCB train) | POJ-104 / BCB | 0.8925 | 0.9972 | 0.9985 | 0.9988 | 0.9978 | 0.7971 | Ours; BCB validation-calibrated threshold, fixed-threshold F1=0.2406 |\n", "checkpoints": [{"name": "CodeBERT", "checkpoint": "codebert_cls", "local_path": "F:\\桌面\\大数据\\大作业\\BigDataHomework\\outputs\\checkpoints\\codebert_cls", "exists": false, "looks_ready": false, "files": []}, {"name": "GraphCodeBERT", "checkpoint": "graphcodebert_cls", "local_path": "F:\\桌面\\大数据\\大作业\\BigDataHomework\\outputs\\checkpoints\\graphcodebert_cls", "exists": false, "looks_ready": false, "files": []}, {"name": "GraphCodeBERT + Hard Negatives", "checkpoint": "graphcodebert_hard_negatives", "local_path": "F:\\桌面\\大数据\\大作业\\BigDataHomework\\outputs\\checkpoints\\graphcodebert_hard_negatives", "exists": false, "looks_ready": false, "files": []}, {"name": "UniXcoder", "checkpoint": "unixcoder_retrieval", "local_path": "F:\\桌面\\大数据\\大作业\\BigDataHomework\\outputs\\checkpoints\\unixcoder_retrieval", "exists": false, "looks_ready": false, "files": []}]};</script>
+  <script>window.__SUMMARY__ = {"project_root": "/home/lrj/BIG/semantic-code-reuse", "results_dir": "/home/lrj/BIG/semantic-code-reuse/outputs/results", "checkpoint_root": "/home/lrj/BIG/semantic-code-reuse/outputs/checkpoints", "methods": [{"id": "tfidf", "name": "TF-IDF", "task": "语义检索", "file": "tfidf_results.json", "notes": "词法相似度基线方法", "metrics": {"recall@1": 0.8076666666666666, "recall@5": 0.914, "recall@10": 0.9486666666666667, "mrr": 0.8560613059081037, "map@r": 0.21688534237171136, "num_queries": 12000.0, "method": "TF-IDF"}}, {"id": "unixcoder", "name": "UniXcoder", "task": "语义检索", "file": "unixcoder_retrieval_results.json", "notes": "双塔语义检索模型", "checkpoint": "unixcoder_retrieval", "metrics": {"recall@1": 0.9975833333333334, "recall@5": 0.9988333333333334, "recall@10": 0.99925, "mrr": 0.9982039599004038, "map@r": 0.9098223936303266, "num_queries": 12000.0, "method": "unixcoder_retrieval", "checkpoint": "outputs/checkpoints/unixcoder_retrieval", "runtime_seconds": 952.658403635025}}, {"id": "label_aware", "name": "Label-aware UniXcoder", "task": "语义检索", "file": "unixcoder_label_aware_results.json", "notes": "修正 batch 内同题样本被误作负例的问题", "checkpoint": "unixcoder_label_aware", "metrics": {"recall@1": 0.9981666666666666, "recall@5": 0.9989166666666667, "recall@10": 0.99925, "mrr": 0.9985638126266388, "map@r": 0.911661895650383, "num_queries": 12000.0, "method": "unixcoder_label_aware", "checkpoint": "outputs/checkpoints/unixcoder_label_aware", "runtime_seconds": 1177.7179198265076}}, {"id": "supcon_ce", "name": "UniXcoder + SupCon CE (k=2)", "task": "语义检索", "file": "unixcoder_supcon_ce_k2_w02_results.json", "notes": "基于 P-K balanced batch 的监督对比学习与 CE 辅助约束", "checkpoint": "unixcoder_supcon_ce_k2_w02", "metrics": {"recall@1": 0.9980833333333333, "recall@5": 0.9990833333333333, "recall@10": 0.9995833333333334, "mrr": 0.9985740069684301, "map@r": 0.9254381365513417, "num_queries": 12000.0, "method": "unixcoder_supcon_ce_k2_w02", "checkpoint": "outputs/checkpoints/unixcoder_supcon_ce_k2_w02", "runtime_seconds": 516.5354022979736}}], "best_retrieval": {"id": "supcon_ce", "name": "UniXcoder + SupCon CE (k=2)", "task": "语义检索", "file": "unixcoder_supcon_ce_k2_w02_results.json", "notes": "基于 P-K balanced batch 的监督对比学习与 CE 辅助约束", "checkpoint": "unixcoder_supcon_ce_k2_w02", "metrics": {"recall@1": 0.9980833333333333, "recall@5": 0.9990833333333333, "recall@10": 0.9995833333333334, "mrr": 0.9985740069684301, "map@r": 0.9254381365513417, "num_queries": 12000.0, "method": "unixcoder_supcon_ce_k2_w02", "checkpoint": "outputs/checkpoints/unixcoder_supcon_ce_k2_w02", "runtime_seconds": 516.5354022979736}}, "best_classifier": null, "ablation": {}, "error_analysis": "## 与本任务的关系\n\n本作业的任务不是判断固定两段代码是否相同，而是模拟代码查重中的候选召回：给定一段待查代码，在 POJ-104 候选库中检索解决同一问题的代码。评价指标 MAP@R 关注的是相关代码能否排在前 R 个结果中，因此错误分析也围绕“该召回的没召回”和“不该靠前的排太前”展开。\n\n## 分类说明\n\n- 误报风险：不同题目的代码共享类似输入输出模板、数组循环或排序结构，TF-IDF 这类词法方法会把它们排得很靠前。对查重系统来说，这会造成误报，让人工复核成本变高。\n- 漏召回风险：同一题目的代码可能变量命名、控制流、函数拆分和算法写法完全不同。它们才是语义代码复用检测真正要找的 Type-4 克隆，如果排不上前列，就会降低 MAP@R。\n- 长度限制：UniXcoder 输入长度为 512，超长代码会被截断。若核心判断或输出逻辑在后半段，向量表示会缺失关键信息，进而影响检索排序。\n- 模型漏判：二分类模型在部分正例代码对上给出低分，说明“把两个代码拼成一对判断”并不总是稳定。我们的主方法选择检索式双塔模型，是因为它更贴合 POJ-104 的任务设定。\n- 基线失败：TF-IDF top1 错误但 UniXcoder 能命中同题代码，说明预训练代码模型确实学到了超出 token 重合度的语义表示。\n\n## 我们方法的对应改进\n\nUniXcoder baseline 已经能显著优于 TF-IDF，但普通 batch 内对比学习会把同一 problem_id 的其他代码误当负例。最终方法 UniXcoder + SupCon CE 使用 P-K balanced batch，让每个 batch 中同一题目至少有多个样本，并把同 problem_id 的代码作为正例拉近。这直接针对“低词法相似但语义相同”的漏召回问题。\n\nCE 辅助约束则帮助模型把不同 problem_id 的表示边界拉开，降低“高词法相似但语义不同”的误报风险。最终 MAP@R 从 UniXcoder baseline 的 0.9098 提升到 0.9254，说明这些训练目标改动确实改善了检索式查重的排序质量。\n\n## 汇报时的结论\n\n这些错误样例说明：词法相似不等于语义复用，词法不相似也不代表没有复用。本项目的价值在于把代码查重转化为语义检索问题，并通过监督对比学习让同题不同写法的代码在向量空间更接近，让不同题但模板相似的代码更容易分开。\n", "error_case_groups": [{"kind": "false_positive", "kind_label": "误报风险", "title": "高词法相似但语义不同", "summary": "输入输出模板、循环和数组操作高度相似时，词法方法会把不同题目误判为相似。", "cases": [{"title": "problem_4 vs problem_52", "subtitle": "TF-IDF score 1.0000，但语义标签不同", "badge": "易误报", "left_label": "样本 A", "right_label": "样本 B", "left_code": "int main() { int m,n,i,j,k,a[100][100]; scanf(\"%d%d\",&m,&n); for(i=0;i<m;i++) for(j=0;j<n;j++) { scanf(\"%d\",&a[i][j]); } printf(\"%d\\n\",a[0][0]); for(j=1;j<n;j++) { for(i=0;i<j+1&&i<m;i++) { printf(\"%d\\n\",a[i][j-i]); } } ...", "right_code": "int main() {int n, m, a[100], b[100], *p, i, j, t, k; scanf(\"%d%d\",&n,&m); for(i=0;i<n;i++) {scanf(\"%d\",&a[i]);} p=&a[n-m]; for(i=n-m;i<n;i++) {b[i-n+m]=*(p++);} for(j=0;j<m;j++) { for(i=j,t=a[i];i<n;i++) { k=a[i+1]; a[i..."}, {"title": "problem_10 vs problem_15", "subtitle": "TF-IDF score 1.0000，但语义标签不同", "badge": "易误报", "left_label": "样本 A", "right_label": "样本 B", "left_code": "void main() {int a[100],b[100],i,j,k=0,n; scanf(\"%d\",&n); for(i=0;i<n;i++) {scanf(\"%d\",&a[i]); b[i]=1;} for(i=n-1;i>=0;i--) {k=0; for(j=n-1;j>i;j--) {if(a[i]>=a[j]&&b[j]>k) {k=b[j]; b[i]=b[j]+1;} } } k=b[0]; for(i=0;i<n;...", "right_code": "void main() { int a,b,c,d,n,i,j,x,y,s,m[100][100]; scanf(\"%d\",&n); for(i=0;i<n;i++) for(j=0;j<n;j++) scanf(\"%d\",&m[i][j]); for(i=0;i<n;i++) for(j=0;j<n;j++) { if(m[i][j]==0 && m[i+1][j]==0 && m[i][j+1]==0) { a=i;b=j; } i..."}, {"title": "problem_13 vs problem_53", "subtitle": "TF-IDF score 1.0000，但语义标签不同", "badge": "易误报", "left_label": "样本 A", "right_label": "样本 B", "left_code": "int main() { int a[20000],n,i,j; scanf(\"%d\",&n); for(i=0;i<n;i++) { scanf(\"%d\",&a[i]); } printf(\"%d\",a[0]); for(i=1;i<n;i++) { for(j=0;j<i;j++) { if(a[i]==a[j]) {j=i;} else {j=j;} } if(j==i) printf(\" %d\",a[i]); } return ...", "right_code": "int main() { int a[20000],n,i,j; scanf(\"%d\",&n); for(i=0;i<n;i++) { scanf(\"%d\",&a[i]); } printf(\"%d\",a[0]); for(i=1;i<n;i++) { for(j=0;j<i;j++) { if(a[i]==a[j]) {j=i;} else {j=j;} } if(j==i) printf(\",%d\",a[i]); } return ..."}]}, {"kind": "false_negative", "kind_label": "漏召回风险", "title": "低词法相似但语义相同", "summary": "这类样本是语义查重的核心难点，需要模型理解实现意图，而不是只看 token 重合。", "cases": [{"title": "problem_100 · test_9553 / test_9811", "subtitle": "token Jaccard 0.1518，语义相同但写法差异大", "badge": "难召回", "left_label": "test_9553", "right_label": "test_9811", "left_code": "void main()\r\n{\r\n\tchar str[300];\r\n\tint i,n,flag=0;\r\n\tint a1=0,b1=0,c1=0,d1=0,e1=0,f1=0,g1=0,h1=0,i1=0,j1=0,k1=0,l1=0,m1=0,n1=0,o1=0,p1=0,q1=0,r1=0,s1=0,t1=0,u1=0,v1=0,w1=0,x1=0,y1=0,z1=0;\r\n    int a2=0,b2=0,c2=0,d2=0,e2=0,f2=0,g2=0,h2=0,i2=0,j2=0,k2=0,l2=0,m2=0,n2=0,o2=0,p2=0,q2=0,r2=0,s2=0,t2=0,u2=0,v2=0,w2=0,x2=0,y2=0,z2=0;\r\n\tgets(str);\r\n\tn=strlen(str);\r\n\r\n\tfor(i=0;i<n;i++){\r\n\t\tif(str[i]>'A'&&str[i]<'Z'||str[i]>'a'&&str[i]<'z')\r\n\t\t\tflag++;\r\n\t}\r\n\tif(flag==0)\r\n\t\tprintf(\"No\\n\");\r\n\telse {\r\n\t\tfor(i=0;i<n;i++){\r\n\t\t\tif(str[i]=='A')\r\n\t\t\t\ta1++;\r\n\t\t\telse if(str[i]=='B')\r\n\t\t\t\tb1++;\r\n\t\t\telse if(str[i]=='C')\r\n\t\t\t\tc1++;\r\n\t\t\telse if(str[i]=='D')\r\n\t\t\t\td1++;\r\n\t\t\telse if(str[i]=='E')\r\n\t\t\t\te1++;\r\n\t\t\telse if(str[i]=='F')\r\n\t\t\t\tf1++;\r\n\t\t\telse if(str[i]=='G')\r\n\t\t\t\tg1++;\r\n\t\t\telse if(str[i]=='H')\r\n\t\t\t\th1++;\r\n\t\t\telse if(str[i]=='I')\r\n\t\t\t\ti1++;\r\n\t\t\telse if(str[i]=='J')\r\n\t\t\t\tj1++;\r\n\t\t\telse if(str[i]=='K')\r\n\t\t\t\tk1++;\r\n\t\t\telse if(str[i]=='L')\r\n\t\t\t\tl1++;\r\n\t\t\telse if(str[i]=='M')\r\n\t\t\t\tm1++;\r\n\t\t\telse if(str[i]=='N')\r\n\t\t\t\tn1++;\r\n\t\t\telse if(str[i]=='O')\r\n\t\t\t\to1++;\r\n\t\t\telse if(str[i]=='p')\r\n\t\t\t\tp1++;\r\n\t\t\telse if(str[i]=='Q')\r\n\t\t\t\tq1++;\r\n\t\t\telse if(str[i]=='R')\r\n\t\t\t\tr1++;\r\n\t\t\telse if(str[i]=='S')\r\n\t\t\t\ts1++;\r\n\t\t\telse if(str[i]=='T')\r\n\t\t\t\tt1++;\r\n\t\t\telse if(str[i]=='U')\r\n\t\t\t\tu1++;\r\n\t\t\telse if(str[i]=='V')\r\n\t\t\t\tv1++;\r\n\t\t\telse if(str[i]=='W')\r\n\t\t\t\tw1++;\r\n\t\t\telse if(str[i]=='X')\r\n\t\t\t\tx1++;\r\n\t\t\telse if(str[i]=='Y')\r\n\t\t\t\n...", "right_code": "void main()\r\n{\r\n\tchar s[300],a[300];\r\n\tgets(s);\r\n\tint i,count=0;\r\nfor(i=0;s[i]!='\\0';i++)a[i]=0;\r\n\tfor(i=0;s[i]!='\\0';i++)\r\n\t{\r\n\t\tif(s[i]==97){a[1]++;count++;}\r\nif(s[i]==98){a[2]++;count++;}\r\nif(s[i]==99){a[3]++;count++;}\r\nif(s[i]==100){a[4]++;count++;}\r\nif(s[i]==101){a[5]++;count++;}\r\nif(s[i]==102){a[6]++;count++;}\r\nif(s[i]==103){a[7]++;count++;}\r\nif(s[i]==104){a[8]++;count++;}\r\nif(s[i]==105){a[9]++;count++;}\r\nif(s[i]==106){a[10]++;count++;}\r\nif(s[i]==107){a[11]++;count++;}\r\nif(s[i]==108){a[12]++;count++;}\r\nif(s[i]==109){a[13]++;count++;}\r\nif(s[i]==110){a[14]++;count++;}\r\nif(s[i]==111){a[15]++;count++;}\r\nif(s[i]==112){a[16]++;count++;}\r\nif(s[i]==113){a[17]++;count++;}\r\nif(s[i]==114){a[18]++;count++;}\r\nif(s[i]==115){a[19]++;count++;}\r\nif(s[i]==116){a[20]++;count++;}\r\nif(s[i]==117){a[21]++;count++;}\r\nif(s[i]==118){a[22]++;count++;}\r\nif(s[i]==119){a[23]++;count++;}\r\nif(s[i]==120){a[24]++;count++;}\r\nif(s[i]==121){a[25]++;count++;}\r\nif(s[i]==122){a[26]++;count++;}\r\n\t}\r\n\tif(count==0)printf(\"No\");\r\n\tfor(i=1;i<=26;i++)\r\n\t\tif(a[i]!=0)printf(\"%c=%d\\n\",i+96,a[i]);\r\n}"}, {"title": "problem_101 · test_10203 / test_10491", "subtitle": "token Jaccard 0.1552，语义相同但写法差异大", "badge": "难召回", "left_label": "test_10203", "right_label": "test_10491", "left_code": "main()\r\n{\r\n      char a,b,c,A,B,C;\r\n      a=C;\r\n      b=A;\r\n      c=B; \r\n      printf(\"BCA\");\r\n      getchar();\r\n}", "right_code": "/**\r\n* @file 3.cpp\r\n* @author ???\r\n* @date 2011-10-15\r\n* @description\r\n* ??????: ??? \r\n*/\r\nint main()\r\n{\r\nint eA, eB, eC, sA, sB, sC;\r\n // ????????????eA eB eC = 1, 2, 3?????\r\nfor(eA = 1; eA <= 3; eA++)\r\n\tfor(eB = 1; eB <= 3; eB++)\r\n\t\tfor(eC = 1; eC <= 3; eC++)\r\n\t\t{\r\n\t\tsA = (eB > eA) + (eC == eA);\r\n\t\tsB = (eA > eB) + (eA > eC);\r\n\t\tsC = (eC > eB) + (eB > eA);\r\n\t\t// ????????????????\r\n                  if( sA + eA == 3 && sB + eB == 3 && sC + eC == 3\r\n\t\t\t&& eA != eB && eB != eC && eC != eA)\r\n{ // ????\r\nif(eA < eB && eB < eC) cout << \"ABC\" << endl;\r\nif(eA < eC && eC < eB) cout << \"ACB\" << endl;\r\nif(eB < eA && eA < eC) cout << \"BAC\" << endl;\r\nif(eB < eC && eC < eA) cout << \"BCA\" << endl;\r\nif(eC < eA && eA < eB) cout << \"CAB\" << endl;\r\nif(eC < eB && eB < eA) cout << \"CBA\" << endl;\r\n}\r\n         }\r\nreturn 0;\r\n}"}, {"title": "problem_97 · test_8060 / test_8482", "subtitle": "token Jaccard 0.1579，语义相同但写法差异大", "badge": "难召回", "left_label": "test_8060", "right_label": "test_8482", "left_code": "//\r\n//  main.cpp\r\n//  hw\r\n//\r\n//  Created by ? ? on 12-12-16.\r\n//  Copyright (c) 2012? ? ?. All rights reserved.\r\n//\r\n\r\n\r\nint main(int argc, const char * argv[])\r\n{\r\n    int num;\r\n    cin>>num;\r\n    int money[6]={100,50,20,10,5,1};\r\n    for (int i=0; i<6; i++) {\r\n        cout<<num/money[i]<<endl;\r\n        num-=(num/money[i])*money[i];\r\n    }\r\n    return 0;\r\n}", "right_code": "int main()\r\n{\r\n\tint n;\r\n\tscanf(\"%d\",&n);\r\n        if(n==42) {printf(\"0\\n0\\n2\\n0\\n0\\n2\");}\r\n        else if(n==468){printf(\"4\\n1\\n0\\n1\\n1\\n3\");}\r\nelse if(n==335){printf(\"3\\n0\\n1\\n1\\n1\\n0\");}\r\nelse if(n==501){printf(\"5\\n0\\n0\\n0\\n0\\n1\");}\r\nelse if(n==170){printf(\"1\\n1\\n1\\n0\\n0\\n0\");}\r\nelse if(n==725){printf(\"7\\n0\\n1\\n0\\n1\\n0\");}\r\nelse if(n==479){printf(\"4\\n1\\n1\\n0\\n1\\n4\");}\r\nelse if(n==359){printf(\"3\\n1\\n0\\n0\\n1\\n4\");}\r\nelse{printf(\"J\");}\r\n\t\r\n\t\r\n\t\r\n\t\r\n\t\r\n\r\n\r\n\r\n\treturn 0;\r\n}"}]}, {"kind": "truncation", "kind_label": "长度限制", "title": "长代码截断风险", "summary": "模型最大长度为 512，超长代码的关键逻辑如果出现在后半部分，会影响向量表示。", "cases": [{"title": "test_9897 · problem_100", "subtitle": "2838 tokens，超过 max_length 512，后半段逻辑可能被截断", "badge": "截断风险", "single_label": "test_9897", "single_code": "void main()\r\n{\r\n\tchar a[300];\r\n\tchar b[52];\r\n\tint i=0,j=0;\r\n\tint p,q,t,s;\r\n\tscanf(\"%s\",a);\r\n\twhile(j<52)\r\n\t{\r\n\t\tb[j]=0;\r\n\t\tj++;\r\n\t}\r\n\twhile(a[i]!='\\0')\r\n\t{\r\n\t\tif (a[i]=='a')\r\n\t\t\tb[0]=b[0]+1;\r\n\t\telse if (a[i]=='b')\r\n\t\t\tb[1]=b[1]+1;\r\n\t\telse if (a[i]=='c')\r\n\t\t\tb[2]=b[2]+1;\r\n\t\telse if (a[i]=='d')\r\n\t\t\tb[3]=b[3]+1;\r\n\t\telse if (a[i]=='e')\r\n\t\t\tb[4]=b[4]+1;\r\n\t\telse if (a[i]=='f')\r\n\t\t\tb[5]=b[5]+1;\r\n\t\telse if (a[i]=='g')\r\n\t\t\tb[6]=b[6]+1;\r\n\t\telse if (a[i]=='h')\r\n\t\t\tb[7]=b[7]+1;\r\n\t\telse if (a[i]=='i')\r\n\t\t\tb[8]=b[8]+1;\r\n\t\telse if (a[i]=='j')\r\n\t\t\tb[9]=b[9]+1;\r\n\t\telse if (a[i]=='k')\r\n\t\t\tb[10]=b[10]+1;\r\n\t\telse if (a[i]=='l')\r\n\t\t\tb[11]=b[11]+1;\r\n\t\telse if (a[i]=='m')\r\n\t\t\tb[12]=b[12]+1;\r\n\t\telse if (a[i]=='n')\r\n\t\t\tb[13]=b[13]+1;\r\n\t\telse if (a[i]=='o')\r\n\t\t\tb[14]=b[14]+1;\r\n\t\telse if (a[i]=='p')\r\n\t\t\tb[15]=b[15]+1;\r\n\t\telse if (a[i]=='q')\r\n\t\t\tb[16]=b[16]+1;\r\n\t\telse if (a[i]=='r')\r\n\t\t\tb[17]=b[17]+1;\r\n\t\telse if (a[i]=='s')\r\n\t\t\tb[18]=b[18]+1;\r\n\t\telse if (a[i]=='t')\r\n\t\t\tb[19]=b[19]+1;\r\n\t\telse if (a[i]=='u')\r\n\t\t\tb[20]=b[20]+1;\r\n\t\telse if (a[i]=='v')\r\n\t\t\tb[21]=b[21]+1;\r\n\t\telse if (a[i]=='w')\r\n\t\t\tb[22]=b[22]+1;\r\n\t\telse if (a[i]=='x')\r\n\t\t\tb[23]=b[23]+1;\r\n\t\telse if (a[i]=='y')\r\n\t\t\tb[24]=b[24]+1;\r\n\t\telse if (a[i]=='z')\r\n\t\t\tb[25]=b[25]+1;\r\n\t\telse if (a[i]=='A')\r\n\t\t\tb[26]=b[26]+1;\r\n\t\telse if (a[i]=='B')\r\n\t\t\tb[27]=b[27]+1;\r\n\t\telse if (a[i]=='C')\r\n\t\t\tb[28]=b[28]+1;\r\n\t\telse if (a[i]=='D')\r\n\t\t\tb[29]=b[29]+1;\r\n\t\telse i\n..."}, {"title": "test_9948 · problem_100", "subtitle": "2465 tokens，超过 max_length 512，后半段逻辑可能被截断", "badge": "截断风险", "single_label": "test_9948", "single_code": "int main(){\r\n\tchar zfc[301];\r\n\tgets(zfc);\r\n\tint n=strlen(zfc),c=0;\r\n\tchar dx[27]=\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";\r\n\tchar xx[27]=\"abcdefghijklmnopqrstuvwxyz\";\r\n\tint dxs[26],xxs[26],i;\r\n\tfor(i=0;i<26;i++){\r\n\t\tdxs[i]=0;\r\n\t\txxs[i]=0;\r\n\t}\r\n\tchar*ps;\r\n\tfor(ps=zfc;*ps!='\\0';ps++){\r\n\t\t\tif(*ps=='A'){dxs[0]++;c++;}\r\n\t\t\tif(*ps=='B'){dxs[1]++;c++;}\r\n\t\t\tif(*ps=='C'){dxs[2]++;c++;}\r\n\t\t\tif(*ps=='D'){dxs[3]++;c++;}\r\n\t\t\tif(*ps=='E'){dxs[4]++;c++;}\r\n\t        if(*ps=='F'){dxs[5]++;c++;}\r\n\t\t\tif(*ps=='G'){dxs[6]++;c++;}\r\n\t\t\tif(*ps=='H'){dxs[7]++;c++;}\r\n\t\t\tif(*ps=='I'){dxs[8]++;c++;}\r\n\t\t\tif(*ps=='J'){dxs[9]++;c++;}\r\n\t\t\tif(*ps=='K'){dxs[10]++;c++;}\r\n\t\t\tif(*ps=='L'){dxs[11]++;c++;}\r\n\t\t\tif(*ps=='M'){dxs[12]++;c++;}\r\n\t        if(*ps=='N'){dxs[13]++;c++;}\r\n\t\t\tif(*ps=='O'){dxs[14]++;c++;}\r\n\t\t\tif(*ps=='P'){dxs[15]++;c++;}\r\n\t\t\tif(*ps=='Q'){dxs[16]++;c++;}\r\n\t\t\tif(*ps=='R'){dxs[17]++;c++;}\r\n\t\t\tif(*ps=='S'){dxs[18]++;c++;}\r\n\t\t\tif(*ps=='T'){dxs[19]++;c++;}\r\n\t        if(*ps=='U'){dxs[20]++;c++;}\r\n\t\t\tif(*ps=='V'){dxs[21]++;c++;}\r\n\t\t\tif(*ps=='W'){dxs[22]++;c++;}\r\n\t\t\tif(*ps=='X'){dxs[23]++;c++;}\t\t\r\n\t\t\tif(*ps=='Y'){dxs[24]++;c++;}\r\n\t        if(*ps=='Z'){dxs[25]++;c++;}\r\n\t\t\tif(*ps=='a'){xxs[0]++;c++;}\r\n\t\t\tif(*ps=='b'){xxs[1]++;c++;}\r\n\t\t\tif(*ps=='c'){xxs[2]++;c++;}\r\n\t        if(*ps=='d'){xxs[3]++;c++;}\r\n\t\t\tif(*ps=='e'){xxs[4]++;c++;}\r\n\t\t\tif(*ps=='f'){xxs[5]++;c++;}\r\n\t\t\tif(*ps=='g'){xxs[6]++;c++;}\r\n\t\t\tif(*ps=='h'){xxs[7]+\n..."}, {"title": "test_9639 · problem_100", "subtitle": "2419 tokens，超过 max_length 512，后半段逻辑可能被截断", "badge": "截断风险", "single_label": "test_9639", "single_code": "void main()\r\n{\r\n\tint x[52]={0},i,flag,len;\r\n\tchar str[MAX];\r\n\tscanf(\"%s\",str);\r\n\tlen=strlen(str);\r\n\tfor(i=0;i<len;i++)\r\n\t{\r\n\t    if(str[i]=='a') x[0]+=1;\r\n\t\telse if(str[i]=='b') x[1]+=1;\r\n\t\telse if(str[i]=='c') x[2]+=1;\r\n\t\telse if(str[i]=='d') x[3]=x[3]+1;\r\n\t\telse if(str[i]=='e') x[4]=x[4]+1;\r\n\t\telse if(str[i]=='f') x[5]=x[5]+1;\r\n\t\telse if(str[i]=='g') x[6]=x[6]+1;\r\n\t\telse if(str[i]=='h') x[7]=x[7]+1;\r\n\t\telse if(str[i]=='i') x[8]=x[8]+1;\r\n\t\telse if(str[i]=='j') x[9]=x[9]+1;\r\n\t\telse if(str[i]=='k') x[10]=x[10]+1;\r\n\t\telse if(str[i]=='l') x[11]=x[11]+1;\r\n\t\telse if(str[i]=='m') x[12]=x[12]+1;\r\n\t\telse if(str[i]=='n') x[13]=x[13]+1;\r\n\t\telse if(str[i]=='o') x[14]=x[14]+1;\r\n\t\telse if(str[i]=='p') x[15]=x[15]+1;\r\n\t\telse if(str[i]=='q') x[16]=x[16]+1;\r\n\t\telse if(str[i]=='r') x[17]=x[17]+1;\r\n\t\telse if(str[i]=='s') x[18]=x[18]+1;\r\n\t\telse if(str[i]=='t') x[19]=x[19]+1;\r\n\t\telse if(str[i]=='u') x[20]=x[20]+1;\r\n\t\telse if(str[i]=='v') x[21]=x[21]+1;\r\n\t\telse if(str[i]=='w') x[22]=x[22]+1;\r\n\t\telse if(str[i]=='x') x[23]=x[23]+1;\r\n        else if(str[i]=='y') x[24]=x[24]+1; \r\n\t\telse if(str[i]=='z') x[25]=x[25]+1;\r\n\t    else if(str[i]=='A') x[26]+=1;\r\n\t\telse if(str[i]=='B') x[27]+=1;\r\n\t\telse if(str[i]=='C') x[28]=x[28]+1;\r\n\t\telse if(str[i]=='D') x[29]=x[29]+1;\r\n\t\telse if(str[i]=='E') x[30]=x[30]+1;\r\n\t\telse if(str[i]=='F') x[31]=x[31]+1;\r\n\t\telse if(str[i]=='G') x[32]=x[32]+1;\r\n\t\telse if(str[i]=='H') \n..."}]}, {"kind": "model_miss", "kind_label": "模型漏判", "title": "神经模型漏判样例", "summary": "以下正例代码对被 GraphCodeBERT 判为不相似，展示了二分类模型在复杂实现上的漏判风险。", "cases": [{"title": "pair_00002198 · problem_86", "subtitle": "GraphCodeBERT false negative，score 0.1865，token Jaccard 0.7609", "badge": "漏判", "left_label": "代码 A", "right_label": "代码 B", "left_code": "int main()\r\n{\r\n   int a[100],bre[100];\r\n   int i,j,k,l,n,m;\r\n   scanf(\"%d\",&n);\r\n   while(n--)\r\n   {\r\n\t   for(i=1;i<=60;i++)\r\n\t   {a[i]=1;}\r\n\t   scanf(\"%d\",&m);\r\n\t   if(m==0) \r\n\t   {\r\n\t\t   printf(\"60\\n\");\r\n\t\t   continue;\r\n\t   }\r\n\t   else\r\n\t   {\r\n\t\t   for(i=1;i<=m;i++)\r\n\t\t\t   scanf(\"%d\",&bre[i]);\r\n\t\t   for(i=1;i<=m;i++)\r\n\t\t\t   bre[i]=bre[i]+3*(i-1);\r\n\t\t   for(i=1;i<=m;i++)\r\n\t\t   {\r\n\t\t\t   a[bre[i]+1]=0;\r\n\t\t\t   a[bre[i]+2]=0;\r\n\t\t\t   a[bre[i]+3]=0;\r\n\t\t   }\r\n\t\t   l=0;\r\n\t\t  for(i=1;i<=60;i++)\r\n            l=l+a[i];\r\n\t\t  printf(\"%d\\n\",l);\r\n\t   }\r\n   }\r\n   return 0;\r\n}", "right_code": "int main()\r\n{\r\n\tint n,i=0,b[100],j=1,t,m,k=0,l;//b[]????\r\n\tscanf(\"%d\",&m);\r\n\tfor(l=0;l<m;l++)\r\n\t{\r\n\tscanf(\"%d\",&n);\r\n\t\tint *a=(int*)malloc(sizeof(int)*(n+2));\r\n\t\tfor(i=0; i<n; i++)\r\n\t\t{\r\n\t\t\tscanf(\"%d\",&a[i]);\r\n\t\t}\r\n\t\ti=0;\r\n\t\tt=0;\r\n\t\tfor(j=1;j<=100;j++)\r\n\t\t{\r\n\t\t\tb[j]=t+1;\r\n\t\t\tt=b[j];\r\n\t\t\tif(b[j]==a[i])//???\r\n\t\t\t{\r\n\t\t\t\ti++;\r\n\t\t\t\tfor(k=0;k<3; k++)//b??????????????\r\n\t\t\t\t\tb[++j]=t;\r\n\t\t\t}\r\n\t\t}\r\n\t\tprintf(\"%d\\n\", b[60]);\r\n\t}\r\n\treturn 0;\r\n}"}, {"title": "pair_00000806 · problem_83", "subtitle": "GraphCodeBERT false negative，score 0.1475，token Jaccard 0.7288", "badge": "漏判", "left_label": "代码 A", "right_label": "代码 B", "left_code": "double jp(int p)\r\n{\r\n\tdouble jp;\r\n\tif(p>=90)\r\n\t\tjp=4.0;\r\n\telse if(p>=85)\r\n\t\tjp=3.7;\r\n\telse if(p>=82)\r\n\t\tjp=3.3;\r\n\telse if(p>=78)\r\n\t\tjp=3.0;\r\n\telse if(p>=75)\r\n\t\tjp=2.7;\r\n\telse if(p>=72)\r\n\t\tjp=2.3;\r\n\telse if(p>=68)\r\n\t\tjp=2.0;\r\n\telse if(p>=64)\r\n\t\tjp=1.5;\r\n\telse if(p>=60)\r\n\t\tjp=1.0;\r\n\telse\r\n\t\tjp=0.0;\r\n\treturn jp;\r\n}\r\nint main()\r\n{\r\n\tint n,p;\r\n\tscanf(\"%d\",&n);\r\n\tint list1[10];\r\n\tdouble list2[10];\r\n\tint i;\r\n\r\n\tfor(i=0;i<n;i++)\r\n\t\tscanf(\"%d\",&list1[i]);\r\n\tfor(i=0;i<n;i++)\r\n\t{\r\n\t\tscanf(\"%d\",&p);\r\n\t\tlist2[i]=jp(p)*list1[i];\r\n\t}\r\n\r\n\tint sum1=0;\r\n\tdouble sum2;\r\n\tfor(i=0;i<n;i++)\r\n         sum1+=list1[i];\r\n\tfor(i=0;i<n;i++)\r\n\t\tsum2+=(list2[i]/sum1);\r\n\r\n\tprintf(\"%.2f\",sum2);\r\n\treturn 0;\r\n}", "right_code": "int main(){\r\n      int n,i,x; \r\n      float y,c,d,GPA;\r\n      int a[num],b[num];\r\n      x=0;\r\n      c=0;\r\n      d=0;\r\n      scanf(\"%d\",&n);\r\n      for(i=0;i<n;i++){\r\n         scanf(\"%d\",&a[i]);\r\n         x=x+a[i];\r\n     }\r\n     for(i=0;i<n;i++){\r\n         scanf(\"%d\",&b[i]);\r\n     }\r\n     for(i=0;i<n;i++){\r\n       if(b[i]>=90){\r\n         y=4.0;\r\n       }else if(b[i]>=85){\r\n         y=3.7;\r\n       }else if(b[i]>=82){\r\n         y=3.3;\r\n       }else if(b[i]>=78){\r\n         y=3.0;\r\n       }else if(b[i]>=75){\r\n         y=2.7;\r\n       }else if(b[i]>=72){\r\n         y=2.3;\r\n       }else if(b[i]>=68){\r\n         y=2.0;\r\n       }else if(b[i]>=64){\r\n         y=1.5;\r\n       }else if(b[i]>=60){\r\n         y=1.0;\r\n       }else{\r\n         y=0;\r\n       }\r\n       c=y*a[i];\r\n       d=d+c;\r\n     }  \r\n     GPA=d/x;\r\n     printf(\"%.2f\",GPA);\r\n     return 0;\r\n}"}, {"title": "pair_00000542 · problem_82", "subtitle": "GraphCodeBERT false negative，score 0.4873，token Jaccard 0.7273", "badge": "漏判", "left_label": "代码 A", "right_label": "代码 B", "left_code": "int main(){\r\n    int h,tag=0,i,j,n,xy[100][2],sz[2];\r\n\tsz[0]=0;\r\n\tscanf(\"%d\",&n);\r\n\tfor(i=0;i<n;i++){\r\n\t\tfor(j=0;j<2;j++){\r\n\t\t   scanf(\"%d\",&xy[i][j]);\r\n\t\t}\r\n\t}\r\n\tfor(h=0;h<n;h++){\r\n\t\tif(xy[h][0]>=90&&xy[h][0]<=140&&xy[h][1]>=60&&xy[h][1]<=90){\r\n              tag++;\r\n\t\t}\r\n\t\telse{\r\n\t\t\tif(sz[0]<tag){\r\n\t\t\tsz[0]=tag;\r\n\t\t\ttag=0;\r\n\t\t\t}\r\n\t\t\telse{\r\n\t\t\t\ttag=0;\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\tif(sz[0]<tag){\r\n\t\tsz[0]=tag;\r\n\t}\r\n\tprintf(\"%d\",sz[0]);\r\n\treturn 0;\r\n}", "right_code": "int main(){\r\n    int n,i,j,s;\r\n    int a[100];\r\n    int b[100];\r\n    int d[100];\r\n    char c;\r\n    scanf(\"%d\",&n);\r\n    for(i=0;i<n;i++)\r\n    {\r\n    scanf(\"%c%d%d\",&c,&a[i],&b[i]);\r\n    }\r\n    for(j=0;j<n;j++){d[j]=0;}\r\n    for(i=0,j=0;i<n;i++)\r\n    {\r\n                    if(a[i]<=140&&a[i]>=90&&b[i]<=90&&b[i]>=60)\r\n                    {d[j]++;}\r\n                    else{j++;}\r\n    }\r\n    s=d[0];\r\n    for(j=0;j<n;j++)\r\n    {\r\n                       if(d[j]>s)\r\n                       {s=d[j];}\r\n                       }\r\n    printf(\"%d\",s);\r\n    \r\n    return 0;\r\n}"}]}, {"kind": "baseline_fail", "kind_label": "基线失败", "title": "TF-IDF 失败但语义模型成功", "summary": "这些样例体现了语义表示相对词法匹配的价值：词法 top1 错，语义模型仍能召回同题代码。", "cases": [{"title": "test_1 · problem_81", "subtitle": "TF-IDF top1 误召回 test_1825，语义模型 top1 命中 test_1，score 0.9992", "badge": "词法失败", "left_label": "Query test_1", "right_label": "TF-IDF 错误候选 test_1825", "left_code": "int main(){\n    int A[5][5],m,n,row,list,i;\n    row=0;\n    while(row<5){\n        list=0;\n        while(list<5){\n            scanf(\"%d\",&A[row][list]);\n            list++;\n        }\n        row++;\n    }\n    scanf(\"%d%d\",&m,&n);\n    if(m<0||n<0||m>4||n>4){\n        printf(\"error\");\n    }\n    else{\n        i=0;\n        while(i<5){\n            row=A[m][i];\n            A[m][i]=A[n][i];\n            A[n][i]=row;\n            i++;\n        }\n        row=0;\n        while(row<5){\n            list=0;\n            while(list<5){\n                if(list==4){\n                    printf(\"%d\\n\",A[row][list]);\n                }\n                else{\n                printf(\"%d \",A[row][list]);\n                }\n                list++;\n            }\n            row++;\n        }\n    }\n    return 0;\n}", "right_code": "int main()\r\n{\r\n\tint i,j,k;\r\n\tint n;\r\n\tscanf(\"%d\",&n);\r\n\tint list[n];\r\n\r\n\tfor (i=0; i<n; i++) {\r\n\t\tscanf(\"%d\",&list[i]);\r\n\t}\r\n\r\n\tfor (j=n-2;j>=n-3;j--) {\r\n\t\tfor (k=0;k<=j;k++) {\r\n\t\t\tif (list[k] > list[k+1]) {\r\n\t\t\t\tlist[k]=list[k]+list[k+1];\r\n\t\t\t\tlist[k+1]=list[k]-list[k+1];\r\n\t\t\t\tlist[k]=list[k]-list[k+1];\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\tprintf(\"%d\\n%d\",list[n-1],list[n-2]);\r\n\r\n\treturn 0;\r\n}"}, {"title": "test_22 · problem_81", "subtitle": "TF-IDF top1 误召回 test_775，语义模型 top1 命中 test_22，score 0.9991", "badge": "词法失败", "left_label": "Query test_22", "right_label": "TF-IDF 错误候选 test_775", "left_code": "int main()\r\n{\r\nint sz[10][10],xsz[10];\r\nint i,j,n,m;\r\nfor(i=0;i<5;i++){\r\nfor(j=0;j<5;j++){\r\nscanf(\"%d\",&sz[i][j]);\r\n}\r\n}\r\nscanf(\"%d %d\",&n,&m);\r\nif((n<5)&&(m<5)){\r\nfor(j=0;j<5;j++){\r\nxsz[j]=sz[n][j];\r\nsz[n][j]=sz[m][j];\r\nsz[m][j]=xsz[j];\r\n}\r\nfor(i=0;i<5;i++){\r\nfor(j=0;j<4;j++){\r\nprintf(\"%d \",sz[i][j]);\r\n}\r\nprintf(\"%d\\n\",sz[i][4]);\r\n}\r\n}\r\nelse\r\nprintf(\"error\\n\");\r\n\r\nreturn 0;\r\n}", "right_code": "int main(){\r\n\tint n;\r\n\tscanf(\"%d\",&n);\r\n\tstruct point{\r\n\t\tint a,b;\r\n\t}\r\n\tsz[100];\r\n\tint i;\r\n\tfor(i=0;i<n;i++){\r\n\t\tscanf(\"%d%d\",&sz[i].a,&sz[i].b);\r\n\t}\r\n\tint xsz[100]={0};\r\n\tint j;\r\n\tfor(i=0;i<n;i++){\r\n\t\tif(sz[i].a>=90&&sz[i].a<=140&&sz[i].b>=60&&sz[i].b<=90){\r\n\t\t\txsz[i]+=1;\r\n\t\t\tfor(j=i+1;j<n;j++){\r\n\t\t\t\tif(sz[j].a>=90&&sz[j].a<=140&&sz[j].b>=60&&sz[j].b<=90){\r\n\t\t\t\t\txsz[i]+=1;\r\n\t\t\t\t}else{\r\n\t\t\t\t\tbreak;\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t}\r\n\t}\r\n\tint max=0;\r\n\tfor(i=0;i<n;i++){\r\n\t\tif(xsz[i]>max){\r\n\t\t\tmax=xsz[i];\r\n\t\t}\r\n\t}\r\n\tprintf(\"%d\\n\",max);\r\n\treturn 0;\r\n}"}, {"title": "test_35 · problem_81", "subtitle": "TF-IDF top1 误召回 test_929，语义模型 top1 命中 test_35，score 0.9989", "badge": "词法失败", "left_label": "Query test_35", "right_label": "TF-IDF 错误候选 test_929", "left_code": "int su(int n,int m,int *a)\r\n{\r\n    int e=0,i;\r\n    if(n>=0&&n<=4&&m>=0&&m<=4)\r\n    {\r\n                              for(i=0;i<5;i++)\r\n                              {\r\n                              e=*(a+m*5+i);\r\n                              *(a+m*5+i)=*(a+n*5+i);\r\n                              *(a+n*5+i)=e;\r\n                              }\r\n    return 1;\r\n    }\r\n    else return 0;\r\n}\r\nint main(int argc, char *argv[])\r\n{\r\n  int a[5][5],i,j,m,n;\r\n  \r\n  for(i=0;i<5;i++)\r\n  {\r\n                  for(j=0;j<5;j++)\r\n                  {\r\n                                  scanf(\"%d\",&a[i][j]);\r\n                  }\r\n  }\r\n                 \r\n  scanf(\"%d%d\",&n,&m);\r\n                  if(su(n,m,*a))\r\n                  {\r\n                             for(i=0;i<5;i++)\r\n                             {\r\n                                            for(j=0;j<4;j++)\r\n                                            {\r\n                                                            printf(\"%d \",a[i][j]);\r\n                                            }\r\n                                            printf(\"%d\\n\",a[i][4]);\r\n                             }\r\n                  }\r\n                  if(su(n,m,*a)==0)\r\n                  printf(\"error\");                           \r\n  \r\n  \r\n  \r\n  \r\n  return 0;\r\n}", "right_code": "int main()\n{\n    int n,i,sou[max],su[max],a=0,h[max],m;\n    scanf(\"%d\",&n);\n    for(i=0;i<n;i++)\n    {\n        scanf(\"%d%d\",&(sou[i]),&(su[i]));\n    }\n    for(i=0;i<n;i++)\n    if((sou[i]>=90)&&(sou[i]<=140)&&(su[i]>=60)&&(su[i]<=90))\n    {\n        a++;\n        h[i]=a;\n    }else{\n        h[i]=0;\n        a=0;\n    }\n    m=h[0];\n    for(i=0;i<n;i++)\n    {\n        if(m<h[i]){\n            m=h[i];\n        }\n    }\n    printf(\"%d\",m);\n    return 0;\n}"}]}], "final_table": "| Method | Task | MAP@R | Recall@1 | Recall@5 | Recall@10 | MRR | F1 | Notes |\n|---|---|---:|---:|---:|---:|---:|---:|---|\n| TF-IDF | Retrieval | 0.2169 | 0.8077 | 0.9140 | 0.9487 | 0.8561 | - | Lexical baseline |\n| UniXcoder | Retrieval | 0.9098 | 0.9976 | 0.9988 | 0.9992 | 0.9982 | - | Baseline dual encoder |\n| UniXcoder + Label-aware Loss | Retrieval | 0.9117 | 0.9982 | 0.9989 | 0.9992 | 0.9986 | - | Ours: mask same-problem false negatives |\n| UniXcoder + SupCon CE (k=2) | Retrieval | 0.9254 | 0.9981 | 0.9991 | 0.9996 | 0.9986 | - | Ours: supervised contrastive training with class proxy |\n", "checkpoints": [{"name": "UniXcoder", "checkpoint": "unixcoder_retrieval", "local_path": "/home/lrj/BIG/semantic-code-reuse/outputs/checkpoints/unixcoder_retrieval", "exists": true, "looks_ready": true, "files": ["config.json", "dual_encoder_head.pt", "merges.txt", "model.safetensors", "special_tokens_map.json", "tokenizer.json", "tokenizer_config.json", "vocab.json"]}, {"name": "Label-aware UniXcoder", "checkpoint": "unixcoder_label_aware", "local_path": "/home/lrj/BIG/semantic-code-reuse/outputs/checkpoints/unixcoder_label_aware", "exists": true, "looks_ready": true, "files": ["config.json", "dual_encoder_head.pt", "merges.txt", "model.safetensors", "special_tokens_map.json", "tokenizer.json", "tokenizer_config.json", "vocab.json"]}, {"name": "UniXcoder + SupCon CE (k=2)", "checkpoint": "unixcoder_supcon_ce_k2_w02", "local_path": "/home/lrj/BIG/semantic-code-reuse/outputs/checkpoints/unixcoder_supcon_ce_k2_w02", "exists": true, "looks_ready": true, "files": ["config.json", "dual_encoder_config.json", "merges.txt", "model.safetensors", "special_tokens_map.json", "tokenizer.json", "tokenizer_config.json", "vocab.json"]}], "inference_models": [{"name": "UniXcoder", "checkpoint": "unixcoder_retrieval"}, {"name": "Label-aware UniXcoder", "checkpoint": "unixcoder_label_aware"}, {"name": "UniXcoder + SupCon CE (k=2)", "checkpoint": "unixcoder_supcon_ce_k2_w02"}], "examples": [{"id": "test_0-test_1", "title": "problem_81 · test_0 vs candidate pool", "problem_id": "problem_81", "query_id": "test_0", "positive_id": "test_1", "query_code": "int jud(int n,int m){\r\n\tif(n>=0&&n<=4&&m>=0&&m<=4)\r\n\t\treturn 1;\r\n\telse return 0;\r\n}\r\nint main(){\r\nint a[5][5],i,j,n,m,*p[5],*q;\r\nfor(i=0;i<5;i++){\r\nfor(j=0;j<5;j++)\r\nscanf(\"%d\",&a[i][j]);\r\np[i]=a[i];}\r\nscanf(\"%d %d\",&n,&m);\r\nif(jud(n,m)==0)\r\nprintf(\"error\");\r\nelse{\r\nq=p[n];\r\np[n]=p[m];\r\np[m]=q;\r\nfor(i=0;i<5;i++)\r\nfor(j=0;j<5;j++){\r\nif(j==4)\r\nprintf(\"%d\\n\",*(p[i]+j));\r\nelse printf(\"%d \",*(p[i]+j));}}\r\nreturn 0;}", "positive_code": "int main(){\n    int A[5][5],m,n,row,list,i;\n    row=0;\n    while(row<5){\n        list=0;\n        while(list<5){\n            scanf(\"%d\",&A[row][list]);\n            list++;\n        }\n        row++;\n    }\n    scanf(\"%d%d\",&m,&n);\n    if(m<0||n<0||m>4||n>4){\n        printf(\"error\");\n    }\n    else{\n        i=0;\n        while(i<5){\n            row=A[m][i];\n            A[m][i]=A[n][i];\n            A[n][i]=row;\n            i++;\n        }\n        row=0;\n        while(row<5){\n            list=0;\n            while(list<5){\n                if(list==4){\n                    printf(\"%d\\n\",A[row][list]);\n                }\n                else{\n                printf(\"%d \",A[row][list]);\n                }\n                list++;\n            }\n            row++;\n        }\n    }\n    return 0;\n}\n\n"}, {"id": "test_500-test_501", "title": "problem_82 · test_500 vs candidate pool", "problem_id": "problem_82", "query_id": "test_500", "positive_id": "test_501", "query_code": "int main()\r\n{\r\n\tint n,a,b,t=0,m=0;\r\n\tcin>>n;\r\n\tfor(int i=1;i<=n;i++)\r\n\t{\r\n\t\tcin>>a>>b;\r\n\t\tif( (a-90)*(a-140)<=0 &&(b-60)*(b-90)<=0 )\r\n\t\t t+=1;\r\n\t\telse t=0;\r\n\t\tif( t>m ) m=t;\r\n\t}\r\n\tcout<<m<<endl;\r\n\r\n\treturn 0;\r\n}\r\n", "positive_code": "int main()\r\n{\r\n    int b,t,c,n,i;\r\n    int m=0;\r\n    int a[100];\r\n    scanf(\"%d\",&n);\r\n    for(i=0;i<n;i++){\r\n      scanf(\"%d %d\",&b,&c);\r\n      if(b>=90&&b<=140&&c>=60&&c<=90)\r\n      {\r\n            m++;     \r\n            a[i]=m;\r\n      }      \r\n      else{\r\n           m=0;      \r\n           a[i]=0;\r\n           }\r\n    }\r\n        a[n]=a[n-1];\r\n    for(i=0;i<n;i++)\r\n    {\r\n       if(n==1)\r\n          t=a[0];\r\n       else if(a[i+1]>a[i])\r\n          t=a[i+1];\r\n       else{\r\n          t=a[i+1];\r\n          a[i+1]=a[i];\r\n          a[i]=t;\r\n          t=a[i+1];\r\n          }\r\n    }                                  \r\n    printf(\"%d\",t);\r\n    return 0;\r\n}                    "}, {"id": "test_1000-test_1001", "title": "problem_83 · test_1000 vs candidate pool", "problem_id": "problem_83", "query_id": "test_1000", "positive_id": "test_1001", "query_code": "int  main( )\r\n{\r\n   int a[1000];\r\n   int b[1000];\r\n   double c[1000];\r\n   double d[1000];\r\n   int n,i,x=0;\r\n   double y=0.00,z;\r\n\t   scanf (\"%d\",&n);\r\n\t   for(i=0;i<n;i=i+1){\r\n\t\t   scanf(\"%d\",&a[i]);\r\n       }\r\n\t   for(i=0;i<n;i=i+1){\r\n\t\t   scanf(\"%d\",&b[i]);\r\n\t   }\r\n\t   for(i=0;i<n;i=i+1){\r\n          if(b[i]>=90&&b[i]<=100)\r\n\t\t\t  c[i]=4.0;\r\n          else if(b[i]>=85&&b[i]<=89)\r\n\t\t\t  c[i]=3.7;\r\n          else if(b[i]>=82&&b[i]<=84)\r\n\t\t\t  c[i]=3.3;\r\n\t\t  else if(b[i]>=78&&b[i]<=81)\r\n\t\t\t  c[i]=3.0;\r\n\t\t  else if(b[i]>=75&&b[i]<=77)\r\n\t\t\t  c[i]=2.7;\r\n\t\t  else if(b[i]>=72&&b[i]<=74)\r\n\t\t\t  c[i]=2.3;\r\n\t\t  else if(b[i]>=68&&b[i]<=71)\r\n\t\t\t  c[i]=2.0;\r\n          else if(b[i]>=64&&b[i]<=67)\r\n\t\t\t  c[i]=1.5;\r\n\t\t  else if(b[i]>=60&&b[i]<=63)\r\n\t\t\t  c[i]=1.0;\r\n\t\t  else if(b[i]<60)\r\n\t\t\t  c[i]=0.0;\r\n\t   }\r\n\t   for(i=0;i<n;i=i+1){\r\n           d[i]=a[i]*c[i];\r\n\t   }\r\n\t   for(i=0;i<n;i=i+1){\r\n           x=x+a[i];\r\n\t\t   y=y+d[i];\r\n\t   }\r\n\t   z=(y*1.00)/(x*1.00);\r\n       printf(\"%.2lf\",z);\r\nreturn 0;\r\n}\r\n\r\n", "positive_code": "main()\r\n{\r\n\tint n,i,score;\r\n\tscanf(\"%d\",&n);\r\n\tint a[n];\r\n\tfor(i=0;i<n;i++)\r\n\t\tscanf(\"%d\",&a[i]);\r\n\tdouble b[n];\r\n\tfor(i=0;i<n;i++)\r\n\t{\r\n\t\tscanf(\"%d\",&score);\r\n\t\tif(score>=90)\r\n\t\t\tb[i]=4.0;\r\n\t\telse if(score>=85)\r\n\t\t\tb[i]=3.7;\r\n\t\telse if(score>=82)\r\n\t\t\tb[i]=3.3;\r\n\t\telse if(score>=78)\r\n\t\t\tb[i]=3.0;\r\n\t\telse if(score>=75)\r\n\t\t\tb[i]=2.7;\r\n\t\telse if(score>=72)\r\n\t\t\tb[i]=2.3;\r\n\t\telse if(score>=68)\r\n\t\t\tb[i]=2.0;\r\n\t\telse if(score>=64)\r\n\t\t\tb[i]=1.5;\r\n\t\telse if(score>=60)\r\n\t\t\tb[i]=1.0;\r\n\t\telse\r\n\t\t\tb[i]=0;\r\n\t}\r\n\tdouble sum;\r\n\tint x;\r\n\tsum=0;\r\n\tx=0;\r\n\tfor(i=0;i<n;i++)\r\n\t{\r\n\t\tsum=sum+a[i]*b[i];\r\n\t\tx=x+a[i];\r\n\t}\r\n\tdouble ave;\r\n\tave=sum/x;\r\n\tprintf(\"%.2lf\",ave);\r\n\treturn 0;\r\n}\r\n"}, {"id": "test_1500-test_1501", "title": "problem_84 · test_1500 vs candidate pool", "problem_id": "problem_84", "query_id": "test_1500", "positive_id": "test_1501", "query_code": "int main()\r\n{\r\n\tint a[100];\r\n\tint max,smax,i,n;\r\n\tmax=smax=i=n=0;\r\n\tscanf(\"%d\",&n);\r\n\tfor(i=1;i<=n;i++)\r\n\t{\r\n\t\tscanf(\"%d\",&a[i]);\r\n\t}\r\n\tif(a[1]>a[2])\r\n\t{\r\n\t\tmax=a[1];\r\n\t\tsmax=a[2];\r\n\t}\r\n\telse\r\n\t{\r\n\t\tmax=a[2];\r\n\t\tsmax=a[1];\r\n\t}\r\n\tfor(i=3;i<=n;i++)\r\n\t{\r\n\t\tif(a[i]>max)\r\n\t\t{\r\n\t\t\tsmax=max;\r\n\t\t\tmax=a[i];\r\n\t\t}\r\n\t\telse if(a[i]<=max&&a[i]>smax)\r\n\t\t{\r\n\t\t\tsmax=a[i];\r\n\t\t}\r\n\t}\r\n\tprintf(\"%d\\n%d\",max,smax);\r\n\treturn 0;\r\n}\r\n", "positive_code": "int main(){\r\n    int c,d,n;\r\n    int b=0;\r\n    int a=0;\r\n    int i=1;\r\n    scanf(\"%d\\n\",&n);\r\n    for(i=1;i<=n;i++){\r\n        scanf(\"%d\\n\",&c);\r\n        if(b>a){\r\n              d=a;\r\n              a=b;\r\n              b=d;\r\n        }\r\n        if(c>=a&&a>=b){\r\n              b=a;\r\n              a=c;\r\n        }\r\n        if(a>c&&c>b){\r\n              b=c;\r\n        }\r\n    }\r\n    printf(\"%d\\n%d\",a,b);\r\n    return 0;\r\n}\r\n\r\n        "}, {"id": "test_2000-test_2001", "title": "problem_85 · test_2000 vs candidate pool", "problem_id": "problem_85", "query_id": "test_2000", "positive_id": "test_2001", "query_code": "int main()\n{\n    int n,i,j,a=0;\n    char zf[N][25];\n    scanf(\"%d\",&n);\n    for(i=0;i<=n-1;i++)\n    {\n        scanf(\"%s\",zf[i]);\n    }\n    for(i=0;i<=n-1;i++)\n    {\n        a=0;\n        if((zf[i][0]>='0')&&(zf[i][0]<='9'))\n        {\n            a=1;\n        }\n        for(j=0;j<=(strlen(zf[i])-1);j++)\n        {\n            if((((zf[i][j]>='a')&&(zf[i][j]<='z'))||((zf[i][j]>='A')&&(zf[i][j]<='Z'))||((zf[i][j]>='0')&&(zf[i][j]<='9'))||(zf[i][j]=='_'))==0)\n            {\n                a=1;\n            }\n        }\n        if(a==0)\n        {\n            printf(\"yes\\n\");\n        }\n        else\n        {\n            printf(\"no\\n\");\n        }\n    }\n    return 0;\n}\n", "positive_code": "int main()\r\n{\r\n\tint n,flag;\r\n\tchar a[22];\r\n\tcin>>n;\r\n\tcin.get();\r\n\twhile(n--){\r\n\t\tflag=0;\r\n\t\tcin.getline(a,22);\r\n\t\tfor(int i=0;a[i]!='\\0';i++){\r\n\t\t\tif(a[0]<65||(a[0]>90&&a[0]<97&&a[0]!=95)||a[0]>122){\r\n\t\t\t\tcout<<\"no\"<<endl<<endl;\r\n\t\t\t\tflag=1;\r\n\t\t\t\tbreak;\r\n\t\t\t}\r\n\t\t\telse if(a[i]<48||(a[i]>57&&a[i]<65)||(a[i]>90&&a[i]<97&&a[i]!=95)||a[i]>122){\r\n\t\t\t\tcout<<\"no\"<<endl<<endl;\r\n\t\t\t\tflag=1;\r\n\t\t\t\tbreak;\r\n\t\t\t}\r\n\t\t}\r\n\t\tif(flag==0)\r\n\t\t\tcout<<\"yes\"<<endl<<endl;\r\n\t}\r\n\treturn 0;\r\n} "}, {"id": "test_2500-test_2501", "title": "problem_86 · test_2500 vs candidate pool", "problem_id": "problem_86", "query_id": "test_2500", "positive_id": "test_2501", "query_code": "//?????????\r\n//20101116 ??\r\nint main()\r\n{\r\n\tint n,pause[20],ps[20][20],sum[20],i,j;//pause[]???????ps[][]????????????sum[]??60??????\r\n\tcin>>n;\r\n\tfor(i=1;i<=n;i++)\r\n\t{\r\n\t\tcin>>pause[i];                                      //??????????\r\n\t\t\tfor(j=1;j<=pause[i];j++)\r\n\t\t\t\tcin>>ps[i][j];                          //???????????\r\n\t}\r\n\tfor(i=1;i<=n;i++)\r\n\t{\r\n\t\tif(pause[i]==0)     sum[i]=60;                           //????????60\r\n\t\tfor(j=1;j<=pause[i];j++)        \r\n\t\t{   \r\n\t\t    if(ps[i][pause[i]]+3*pause[i]<=60)  sum[i]=60-3*pause[i];         //????          \r\n\t\t\t\telse if((ps[i][j]+3*j<60)&&(ps[i][j+1]+3*j>60))\r\n\t\t\t\tsum[i]=60-3*j;\r\n\t\t\telse if((ps[i][j]+3*j<60)&&(ps[i][j+1]+3*j<=60)&&(ps[i][j+1]+3*j+3>=60))\r\n\t\t\t\tsum[i]=ps[i][j+1];\r\n\t\t}\r\n\tcout<<sum[i]<<endl;               //??\r\n\t}\r\nreturn 0;\r\n}\r\n", "positive_code": "\r\nint main()\r\n{\r\n    int n;\r\n    int a[100], num;\r\n    int i, j;\r\n\r\n    scanf(\"%d\", &n);\r\n    for (i=0; i<n; i++) {\r\n        scanf(\"%d\", &num);\r\n        for (j=0; j<num; j++)\r\n            scanf(\"%d\", &a[j]);\r\n        printf(\"%d\\n\", comp(a, num));\r\n    }\r\n\r\n    return 0;\r\n}\r\n\r\nint comp(int a[], int num)\r\n{\r\n    int i, re = 0;\r\n    for (i=0; i<num; i++) {\r\n        re = 3*(i+1) + a[i];\r\n        if ((re>60) && ((re-3)<60)) /* not jump in 60 */\r\n            return a[i];\r\n        else if (re > 60) /* jumped in 60 */\r\n            return 60 - 3*i;\r\n    }\r\n    if (re <= 60)\r\n        return 60-3*i;\r\n}"}]};</script>
   <script>
 const state = { summary: null };
 
@@ -981,12 +1272,17 @@ const hasLiveBackend = () => window.location.protocol === "http:" || window.loca
 const backendBootHint = "请使用 `python frontend\\app.py --port 8501` 启动本地服务，并在浏览器打开 `http://127.0.0.1:8501`。";
 
 const checkpointById = (modelId) => {
-  if (!state.summary?.checkpoints) return null;
+  if (!state.summary || !state.summary.checkpoints) return null;
   return state.summary.checkpoints.find((item) => item.checkpoint === modelId) || null;
 };
 
+const exampleById = (exampleId) => {
+  if (!state.summary || !state.summary.examples) return null;
+  return state.summary.examples.find((item) => item.id === exampleId) || null;
+};
+
 const inferErrorText = (response, data) => {
-  if (data?.error || data?.hint) {
+  if (data && (data.error || data.hint)) {
     return `${data.error || "推理失败。"}
 ${data.hint || ""}`.trim();
   }
@@ -1001,15 +1297,60 @@ const ERROR_SUMMARY = [
   ["低词法相似正例", "同一题目的代码可以使用完全不同的变量组织、分支结构和实现风格。"],
   ["长代码截断", "部分样本 token 数远超最大长度 512，模型可能无法观察完整逻辑。"],
   ["不同算法策略", "同一问题下可能存在通用算法、特殊样例处理或不同复杂度实现。"],
-  ["神经模型失误", "部分高 token 重合正例仍被 GraphCodeBERT 给出较低分数。"],
-  ["语义模型优势", "混合模型能在 TF-IDF top-1 失败时召回同题目代码，体现语义表示价值。"],
+  ["语义模型优势", "UniXcoder 能在 TF-IDF top-1 失败时召回同题目代码，体现语义表示价值。"],
+];
+
+const ERROR_KIND_ORDER = [
+  ["all", "全部"],
+  ["false_positive", "误报风险"],
+  ["false_negative", "漏召回风险"],
+  ["truncation", "长度限制"],
+  ["model_miss", "模型漏判"],
+  ["baseline_fail", "基线失败"],
 ];
 
 const escapeHtml = (text) => String(text)
-  .replaceAll("&", "&amp;")
-  .replaceAll("<", "&lt;")
-  .replaceAll(">", "&gt;")
-  .replaceAll('"', "&quot;");
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;");
+
+const CPP_KEYWORDS = new Set([
+  "alignas", "alignof", "asm", "auto", "break", "case", "catch", "class", "const", "constexpr",
+  "continue", "default", "delete", "do", "else", "enum", "explicit", "extern", "for", "friend",
+  "goto", "if", "inline", "namespace", "new", "operator", "private", "protected", "public",
+  "return", "sizeof", "static", "struct", "switch", "template", "this", "throw", "try", "typedef",
+  "typename", "using", "virtual", "while"
+]);
+
+const CPP_TYPES = new Set([
+  "bool", "char", "double", "float", "int", "long", "short", "signed", "unsigned", "void",
+  "wchar_t", "size_t", "string", "vector", "array", "map", "set", "queue", "stack", "cin", "cout",
+  "scanf", "printf", "gets", "strlen", "sort", "max", "min"
+]);
+
+const highlightCode = (code) => {
+  const pattern = new RegExp("(^\\s*#.*$)|//[^\\n]*|/[*][\\s\\S]*?[*]/|\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'|\\b\\d+(?:[.]\\d+)?\\b|\\b[A-Za-z_]\\w*\\b|[{}()[\\];,.+\\-*\\/%=!<>&|?:]+|\\s+|.", "gm");
+  return String(code || "").replace(pattern, (token, preproc) => {
+    const safe = escapeHtml(token);
+    if (/^\s+$/.test(token)) return safe;
+    if (preproc) return `<span class="tok-preproc">${safe}</span>`;
+    if (token.startsWith("//") || token.startsWith("/*")) return `<span class="tok-comment">${safe}</span>`;
+    if (token.startsWith('"') || token.startsWith("'")) return `<span class="tok-string">${safe}</span>`;
+    if (/^\d/.test(token)) return `<span class="tok-number">${safe}</span>`;
+    if (/^[{}()[\];,.+\-*\/%=!<>&|?:]+$/.test(token)) return `<span class="tok-op">${safe}</span>`;
+    if (CPP_KEYWORDS.has(token)) return `<span class="tok-keyword">${safe}</span>`;
+    if (CPP_TYPES.has(token)) return `<span class="tok-type">${safe}</span>`;
+    return safe;
+  });
+};
+
+const renderQueryPreview = () => {
+  const code = document.getElementById("queryCode").value;
+  document.getElementById("queryPreview").innerHTML = highlightCode(code);
+  const lineCount = code ? code.split(String.fromCharCode(10)).length : 0;
+  document.getElementById("queryMeta").textContent = `${lineCount} lines · ${code.length} chars`;
+};
 
 const markdownLite = (text) => {
   const lines = String(text || "").split("\n");
@@ -1048,7 +1389,7 @@ const renderRankChart = (targetId, methods, metricKey) => {
   const rows = methods
     .filter((method) => typeof (method.metrics || {})[metricKey] === "number")
     .sort((a, b) => b.metrics[metricKey] - a.metrics[metricKey]);
-  const best = rows[0]?.metrics[metricKey] || 1;
+  const best = rows[0] ? rows[0].metrics[metricKey] : 1;
   document.getElementById(targetId).innerHTML = rows.map((method, index) => {
     const value = method.metrics[metricKey];
     const width = Math.max(3, Math.min(100, value / best * 100));
@@ -1067,34 +1408,6 @@ const renderRankChart = (targetId, methods, metricKey) => {
   }).join("");
 };
 
-const renderAblationViz = (summary) => {
-  const before = summary.ablation.without_hard_negatives || {};
-  const after = summary.ablation.with_hard_negatives || {};
-  const keys = ["map@r", "recall@1", "recall@5", "recall@10", "mrr"];
-  document.getElementById("ablationViz").innerHTML = keys.map((key) => {
-    const beforeValue = typeof before[key] === "number" ? before[key] : 0;
-    const afterValue = typeof after[key] === "number" ? after[key] : 0;
-    const maxValue = Math.max(beforeValue, afterValue, 1);
-    return `
-      <article class="ablation-card">
-        <h3>${escapeHtml(key)}</h3>
-        <div class="paired-bars">
-          <div class="paired-row">
-            <span>原始</span>
-            <div class="paired-track"><div class="paired-fill" style="width:${Math.max(3, beforeValue / maxValue * 100)}%"></div></div>
-            <strong>${fmt(beforeValue)}</strong>
-          </div>
-          <div class="paired-row after">
-            <span>困难</span>
-            <div class="paired-track"><div class="paired-fill" style="width:${Math.max(3, afterValue / maxValue * 100)}%"></div></div>
-            <strong>${fmt(afterValue)}</strong>
-          </div>
-        </div>
-      </article>
-    `;
-  }).join("");
-};
-
 const renderErrorCards = () => {
   document.getElementById("errorCards").innerHTML = ERROR_SUMMARY.map(([title, body], index) => `
     <article class="error-card">
@@ -1105,13 +1418,81 @@ const renderErrorCards = () => {
   `).join("");
 };
 
+const renderCaseCode = (label, code) => `
+  <div class="case-code">
+    <span>${escapeHtml(label || "代码")}</span>
+    <pre><code>${highlightCode(code || "")}</code></pre>
+  </div>
+`;
+
+const renderCaseItem = (item) => {
+  const title = item.title || "案例";
+  const subtitle = item.subtitle || "";
+  const badge = item.badge || "案例";
+  const codeHtml = item.single_code
+    ? `<div class="case-code-grid">${renderCaseCode(item.single_label || "代码", item.single_code)}</div>`
+    : `<div class="case-code-grid">${renderCaseCode(item.left_label, item.left_code)}${renderCaseCode(item.right_label, item.right_code)}</div>`;
+  return `
+    <article class="case-item">
+      <header>
+        <div>
+          <h4>${escapeHtml(title)}</h4>
+          <small>${escapeHtml(subtitle)}</small>
+        </div>
+        <span class="case-badge">${escapeHtml(badge)}</span>
+      </header>
+      ${codeHtml}
+    </article>
+  `;
+};
+
+const renderErrorCaseGroups = (groups) => {
+  const target = document.getElementById("errorCaseGroups");
+  const tabs = document.getElementById("errorCategoryTabs");
+  const visibleGroups = (groups || []).filter((group) => group.cases && group.cases.length);
+  const counts = {};
+  visibleGroups.forEach((group) => {
+    counts[group.kind] = (counts[group.kind] || 0) + group.cases.length;
+  });
+  const total = visibleGroups.reduce((sum, group) => sum + group.cases.length, 0);
+  tabs.innerHTML = ERROR_KIND_ORDER.map(([kind, label], index) => {
+    const count = kind === "all" ? total : (counts[kind] || 0);
+    if (!count) return "";
+    return `<button class="error-filter ${index === 0 ? "is-active" : ""}" type="button" data-kind="${escapeHtml(kind)}">${escapeHtml(label)} · ${count}</button>`;
+  }).join("");
+  target.innerHTML = visibleGroups.map((group) => `
+    <section class="error-case-group" data-kind="${escapeHtml(group.kind || "")}">
+      <header>
+        <div>
+          <h3>${escapeHtml(group.title)}</h3>
+          <p>${escapeHtml(group.summary || "")}</p>
+        </div>
+        <span class="group-kind">${escapeHtml(group.kind_label || "错误类型")} · ${group.cases.length}</span>
+      </header>
+      <div class="case-list">
+        ${group.cases.map(renderCaseItem).join("")}
+      </div>
+    </section>
+  `).join("");
+  tabs.querySelectorAll(".error-filter").forEach((button) => {
+    button.addEventListener("click", () => {
+      const kind = button.dataset.kind;
+      tabs.querySelectorAll(".error-filter").forEach((item) => item.classList.toggle("is-active", item === button));
+      target.querySelectorAll(".error-case-group").forEach((group) => {
+        group.style.display = kind === "all" || group.dataset.kind === kind ? "grid" : "none";
+      });
+    });
+  });
+};
+
 const renderSummary = (summary) => {
   const bestRetrieval = summary.best_retrieval;
-  const bestClassifier = summary.best_classifier;
+  const baseline = summary.methods.find((method) => method.id === "unixcoder");
   document.getElementById("bestRetrieval").textContent = bestRetrieval ? bestRetrieval.name : "-";
   document.getElementById("bestRetrievalMeta").textContent = bestRetrieval ? `MAP@R ${fmt(bestRetrieval.metrics["map@r"])}` : "MAP@R";
-  document.getElementById("bestClassifier").textContent = bestClassifier ? bestClassifier.name : "-";
-  document.getElementById("bestClassifierMeta").textContent = bestClassifier ? `F1 ${fmt(bestClassifier.metrics.f1)}` : "F1";
+  const delta = bestRetrieval && baseline ? bestRetrieval.metrics["map@r"] - baseline.metrics["map@r"] : null;
+  document.getElementById("bestClassifier").textContent = typeof delta === "number" ? `+${fmt(delta)}` : "-";
+  document.getElementById("bestClassifierMeta").textContent = "vs UniXcoder MAP@R";
 
   const ready = summary.checkpoints.some((item) => item.looks_ready);
   document.getElementById("runMode").textContent = ready ? "可推理" : "展示";
@@ -1152,7 +1533,7 @@ const renderSummary = (summary) => {
 const renderMetrics = (summary) => {
   const highlights = [
     summary.best_retrieval,
-    summary.best_classifier,
+    summary.methods.find((method) => method.id === "label_aware"),
     summary.methods.find((method) => method.id === "tfidf"),
   ].filter(Boolean);
   document.getElementById("metricHighlights").innerHTML = highlights.map((method) => {
@@ -1168,8 +1549,6 @@ const renderMetrics = (summary) => {
   }).join("");
 
   renderRankChart("retrievalChart", summary.methods, "map@r");
-  renderRankChart("classificationChart", summary.methods, "f1");
-  renderAblationViz(summary);
 
   document.getElementById("metricsRows").innerHTML = summary.methods.map((method) => {
     const m = method.metrics || {};
@@ -1186,19 +1565,53 @@ const renderMetrics = (summary) => {
     </tr>`;
   }).join("");
 
-  const delta = summary.ablation.delta_with_minus_without || {};
-  const keys = ["map@r", "recall@1", "recall@5", "recall@10", "mrr"];
-  document.getElementById("ablationGrid").innerHTML = keys.map((key) => `
-    <div class="delta">
-      <span>${escapeHtml(key)}</span>
-      <strong>${fmt(delta[key])}</strong>
-    </div>
-  `).join("");
 };
 
 const renderErrors = (summary) => {
   renderErrorCards();
+  renderErrorCaseGroups(summary.error_case_groups);
   document.getElementById("errorAnalysis").innerHTML = markdownLite(summary.error_analysis);
+};
+
+const updateExampleCode = () => {
+  const select = document.getElementById("exampleSelect");
+  const example = exampleById(select.value);
+  if (!example) return;
+  document.getElementById("queryCode").value = example.query_code || "";
+  document.getElementById("retrievalResults").innerHTML = "";
+  document.getElementById("inferResult").textContent = `当前示例：${example.problem_id} · query ${example.query_id}`;
+  renderQueryPreview();
+};
+
+const renderDemo = (summary) => {
+  const modelSelect = document.getElementById("modelSelect");
+  const exampleSelect = document.getElementById("exampleSelect");
+  modelSelect.innerHTML = (summary.inference_models || []).map((item) => `
+    <option value="${escapeHtml(item.checkpoint)}">${escapeHtml(item.name)}</option>
+  `).join("");
+  exampleSelect.innerHTML = (summary.examples || []).map((item) => `
+    <option value="${escapeHtml(item.id)}">${escapeHtml(item.title)}</option>
+  `).join("");
+  updateExampleCode();
+};
+
+const renderRetrievalResults = (data) => {
+  const target = document.getElementById("retrievalResults");
+  target.innerHTML = (data.results || []).map((item) => `
+    <article class="retrieval-item">
+      <header>
+        <div>
+          <h3>#${item.rank} · ${escapeHtml(item.id)}</h3>
+          <div class="result-meta">
+            <span>${escapeHtml(item.problem_id)}</span>
+            <span>score ${fmt(item.score)}</span>
+          </div>
+        </div>
+        <span class="match-badge ${item.is_same_problem ? "" : "is-negative"}">${item.is_same_problem ? "同题命中" : "非同题"}</span>
+      </header>
+      <pre><code>${highlightCode(item.code)}</code></pre>
+    </article>
+  `).join("");
 };
 
 const runInfer = async () => {
@@ -1217,15 +1630,18 @@ ${backendBootHint}`;
     return;
   }
   button.disabled = true;
-  result.textContent = "模型加载中，首次推理可能会慢一些。";
+  document.getElementById("retrievalResults").innerHTML = "";
+  result.textContent = "模型加载和编码中，首次运行会慢一些。";
   try {
     const response = await fetch("/api/infer", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: modelId,
-        code1: document.getElementById("code1").value,
-        code2: document.getElementById("code2").value
+        example_id: document.getElementById("exampleSelect").value,
+        code: document.getElementById("queryCode").value,
+        top_k: document.getElementById("topKInput").value,
+        max_candidates: document.getElementById("candidateInput").value
       })
     });
     let data = null;
@@ -1234,11 +1650,13 @@ ${backendBootHint}`;
     } catch (error) {
       data = null;
     }
-    if (!response.ok || !data?.ok) {
+    if (!response.ok || !data || !data.ok) {
       result.textContent = inferErrorText(response, data);
       return;
     }
-    result.textContent = `预测结果：${data.label}\n语义等价概率：${data.semantic_equivalence_score.toFixed(4)}\n运行设备：${data.device}\n模型路径：${data.checkpoint}`;
+    const hits = (data.results || []).filter((item) => item.is_same_problem).length;
+    result.textContent = `检索完成：Top-${data.top_k} 中同题命中 ${hits} 个\n候选数量：${data.candidate_count}\n运行设备：${data.device}\n模型路径：${data.checkpoint}`;
+    renderRetrievalResults(data);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     result.textContent = `无法连接推理接口。
@@ -1250,24 +1668,55 @@ ${backendBootHint}
 };
 
 document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => setView(tab.dataset.view)));
-document.getElementById("runInfer").addEventListener("click", runInfer);
+
+const showBootError = (error) => {
+    const message = error instanceof Error ? error.stack || error.message : String(error);
+    const status = document.getElementById("headerStatus");
+    if (status) status.textContent = "加载失败";
+    const main = document.querySelector("main");
+    if (main) {
+      main.insertAdjacentHTML(
+        "afterbegin",
+        `<div class="markdown-panel"><h2>页面初始化失败</h2><pre>${escapeHtml(message)}</pre></div>`
+      );
+    }
+};
 
 const boot = (summary) => {
     state.summary = summary;
     renderSummary(summary);
     renderMetrics(summary);
     renderErrors(summary);
+    renderDemo(summary);
+    document.getElementById("exampleSelect").addEventListener("change", updateExampleCode);
+    document.getElementById("queryCode").addEventListener("input", renderQueryPreview);
+    document.getElementById("runInfer").addEventListener("click", runInfer);
+};
+
+const safeBoot = (summary) => {
+  try {
+    boot(summary);
+  } catch (error) {
+    showBootError(error);
+  }
+};
+
+const fetchSummary = async () => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch("/api/summary", { signal: controller.signal, cache: "no-store" });
+    if (!response.ok) throw new Error(`summary 接口返回 HTTP ${response.status}`);
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
 };
 
 if (window.__SUMMARY__) {
-  boot(window.__SUMMARY__);
+  safeBoot(window.__SUMMARY__);
 } else {
-  fetch("/api/summary")
-    .then((response) => response.json())
-    .then(boot)
-    .catch((error) => {
-      document.body.insertAdjacentHTML("afterbegin", `<pre>${escapeHtml(error)}</pre>`);
-    });
+  fetchSummary().then(safeBoot).catch(showBootError);
 }
 </script>
 </body>

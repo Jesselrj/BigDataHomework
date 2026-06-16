@@ -1,0 +1,11 @@
+{
+  "recall@1": 0.9975833333333334,
+  "recall@5": 0.9985,
+  "recall@10": 0.9989166666666667,
+  "mrr": 0.9980145975815723,
+  "map@r": 0.9059978263976257,
+  "num_queries": 12000.0,
+  "method": "unixcoder_attentive_projection",
+  "checkpoint": "outputs/checkpoints/unixcoder_attentive_projection",
+  "runtime_seconds": 1179.3455305099487
+}

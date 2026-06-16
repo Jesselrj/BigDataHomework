@@ -1,0 +1,11 @@
+{
+  "recall@1": 0.9975,
+  "recall@5": 0.999,
+  "recall@10": 0.99925,
+  "mrr": 0.998189279652199,
+  "map@r": 0.9141608136827505,
+  "num_queries": 12000.0,
+  "method": "unixcoder_label_aware_balanced_k4_t002",
+  "checkpoint": "outputs/checkpoints/unixcoder_label_aware_balanced_k4_t002",
+  "runtime_seconds": 1182.3826682567596
+}

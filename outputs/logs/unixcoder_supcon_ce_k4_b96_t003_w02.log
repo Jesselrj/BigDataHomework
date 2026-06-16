@@ -1,0 +1,5 @@
+2026-06-16 19:42:51,230 INFO environment={"hostname": "h100", "cwd": "/home/lrj/BIG/semantic-code-reuse", "CUDA_VISIBLE_DEVICES": "5", "HF_ENDPOINT": "https://huggingface.co", "torch_cuda_available": true, "torch_cuda_device_count": 1, "torch_cuda_current_device": 0, "torch_cuda_device_name_0": "NVIDIA A100-SXM-64GB"}
+2026-06-16 19:45:56,862 INFO epoch=0 train_loss=1.110888
+2026-06-16 19:48:58,763 INFO epoch=1 train_loss=0.872798
+2026-06-16 19:52:00,537 INFO epoch=2 train_loss=0.852458
+2026-06-16 19:53:28,476 INFO test_metrics={'recall@1': 0.9983333333333333, 'recall@5': 0.99925, 'recall@10': 0.9995, 'mrr': 0.9987582773307686, 'map@r': 0.9184781733479361, 'num_queries': 12000.0, 'method': 'unixcoder_supcon_ce_k4_b96_t003_w02', 'checkpoint': 'outputs/checkpoints/unixcoder_supcon_ce_k4_b96_t003_w02', 'runtime_seconds': 633.9480767250061}

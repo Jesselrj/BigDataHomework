@@ -2,21 +2,19 @@
 
 本仓库是 POJ-104 数据集上的语义代码复用检测实验代码。
 
-项目包含 TF-IDF、CodeBERT、GraphCodeBERT、UniXcoder、UniXcoder 优化方法、混合重排序和 hard negative 实验。
+项目包含 TF-IDF、UniXcoder baseline、Label-aware UniXcoder 和 UniXcoder + SupCon CE 优化方法。
 
 ## 我们的工作
 
 本项目的主要工作包括：
 
-- 将 POJ-104 整理为语义代码复用检测任务，支持检索和二分类两种实验设置。
-- 实现 TF-IDF 词法检索基线、CodeBERT/GraphCodeBERT 代码对分类模型和 UniXcoder 双塔检索模型。
+- 将 POJ-104 整理为语义代码复用检测任务，支持标准检索评测。
+- 实现 TF-IDF 词法检索基线和 UniXcoder 双塔检索模型。
 - 优化 UniXcoder 的 batch 内对比学习目标，避免同一 problem 的样本被错误当作负例。
 - 在 UniXcoder 上实现监督对比学习 + CE 辅助约束，并使用 P-K balanced batch 采样增强同类正样本和跨类负样本。
-- 设计 UniXcoder 召回 + GraphCodeBERT 重排序的混合方法。
-- 构造 hard negative 样本，并分析其对分类和检索结果的影响。
 - 完成统一的训练、评测、结果汇总和误差分析流程。
 
-POJ-104 数据集和 CodeBERT、GraphCodeBERT、UniXcoder 等预训练模型来自公开资源，本仓库的贡献是围绕语义代码复用检测任务进行实验设计、方法实现和结果分析。
+POJ-104 数据集和 UniXcoder 预训练模型来自公开资源，本仓库的贡献是围绕语义代码复用检测任务进行实验设计、方法实现和结果分析。
 
 ## 文件结构
 
@@ -58,9 +56,6 @@ cd /path/to/semantic-code-reuse
 ```bash
 python -m data.scripts.download_poj104 --output-dir data/processed
 python -m data.scripts.build_pairs --input-dir data/processed --output-dir data/processed
-python -m data.scripts.build_hard_negatives \
-  --input data/processed/train.jsonl \
-  --output data/processed/hard_negatives.jsonl
 ```
 
 处理后应包含：
@@ -72,7 +67,6 @@ data/processed/test.jsonl
 data/processed/train_pairs.jsonl
 data/processed/validation_pairs.jsonl
 data/processed/test_pairs.jsonl
-data/processed/hard_negatives.jsonl
 ```
 
 ## 运行实验
@@ -89,14 +83,9 @@ pytest -q
 
 ```bash
 bash scripts/run_tfidf.sh
-bash scripts/train_codebert.sh
-bash scripts/train_graphcodebert.sh
 bash scripts/train_unixcoder.sh
 bash scripts/train_unixcoder_label_aware.sh
 bash scripts/train_unixcoder_supcon_ce_k2.sh
-bash scripts/run_hybrid_rerank.sh
-bash scripts/train_graphcodebert_hard_negatives.sh
-bash scripts/run_hybrid_rerank_hard.sh
 ```
 
 一键运行全部实验：
@@ -119,17 +108,13 @@ outputs/results/
 | 方法 | 角色 | 任务 | 主指标 | 说明 |
 |---|---|---|---|---|
 | TF-IDF | 对比方法 | 检索 | MAP@R 0.2169 | 词法基线 |
-| CodeBERT | 对比方法 | 分类 | F1 0.9117 | 代码对分类 |
-| GraphCodeBERT | 对比方法 | 分类 | F1 0.9170 | 代码对分类 |
 | UniXcoder | 对比方法 | 检索 | MAP@R 0.9098 | 本地复现 baseline |
 | Label-aware UniXcoder | 本文方法 | 检索 | MAP@R 0.9117 | 假负例修正 |
 | UniXcoder + SupCon CE (k=2) | 本文方法 | 检索 | MAP@R 0.9254 | 最终主方法 |
-| UniXcoder + GraphCodeBERT | 扩展实验 | 检索 + 重排序 | MAP@R 0.9053 | 两阶段重排序 |
-| Hybrid + Hard Negatives | 消融实验 | 检索 + 重排序 | MAP@R 0.8884 | 困难负例消融 |
 
-其中 `UniXcoder + SupCon CE (k=2)` 是本项目最终主方法。它直接在 UniXcoder 上做训练目标和采样策略优化：每个 batch 中每个 `problem_id` 采样 2 个代码样本，同一 `problem_id` 的样本作为正例，不同 `problem_id` 的样本作为负例，并加入轻量 CE 辅助约束。`UniXcoder + Label-aware Loss` 是较早的假负例修正版本。`UniXcoder + GraphCodeBERT` 是扩展的混合重排序实验。`Hybrid + Hard Negatives` 用于观察 hard negative 训练对结果的影响，属于消融实验。
+其中 `UniXcoder + SupCon CE (k=2)` 是本项目最终主方法。它直接在 UniXcoder 上做训练目标和采样策略优化：每个 batch 中每个 `problem_id` 采样 2 个代码样本，同一 `problem_id` 的样本作为正例，不同 `problem_id` 的样本作为负例，并加入轻量 CE 辅助约束。`UniXcoder + Label-aware Loss` 是较早的假负例修正版本。
 
-MAP@R 按 UniXcoder/CodeXGLUE 官方公式计算，即未进入 top-R 的相关样本按 0 计入。当前重排序方法提升了 Recall@1 和 MRR，但 MAP@R 低于 UniXcoder，说明现有融合权重更偏向提升首个正确结果，对 top-R 内整体相关样本排序仍需进一步优化。
+MAP@R 按 UniXcoder/CodeXGLUE 官方公式计算，即未进入 top-R 的相关样本按 0 计入。
 
 ## POJ-104 主实验结论
 
@@ -163,14 +148,6 @@ http://127.0.0.1:8501
 ```text
 frontend/preview.html
 ```
-
-如果需要使用代码对推理演示，请将对应模型文件放在 `outputs/checkpoints/` 下。例如 GraphCodeBERT 分类模型应放在：
-
-```text
-outputs/checkpoints/graphcodebert_cls/
-```
-
-其中应包含 `config.json` 和 `model.safetensors` 等文件。
 
 详细结果见：
 

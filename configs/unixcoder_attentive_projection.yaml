@@ -1,0 +1,8 @@
+inherits: configs/unixcoder_label_aware.yaml
+experiment_name: unixcoder_attentive_projection
+pooling: attention
+projection_head: true
+projection_dropout: 0.1
+checkpoint_dir: outputs/checkpoints/unixcoder_attentive_projection
+embedding_file: outputs/predictions/unixcoder_attentive_projection_test_embeddings.npz
+result_file: outputs/results/unixcoder_attentive_projection_results.json
