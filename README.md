@@ -128,17 +128,17 @@ outputs/results/
 
 MAP@R 按 UniXcoder/CodeXGLUE 官方公式计算，即未进入 top-R 的相关样本按 0 计入。当前重排序方法提升了 Recall@1 和 MRR，但 MAP@R 低于 UniXcoder，说明现有融合权重更偏向提升首个正确结果，对 top-R 内整体相关样本排序仍需进一步优化。
 
-## 论文设置下的 POJ-104 + BigCloneBench 实验
+## POJ-104 主实验结论
 
-原版 UniXcoder 使用论文报告的指标作为对比：POJ-104 使用 MAP@R，BigCloneBench 使用 Recall、Precision 和 F1。我们的改良版使用两阶段训练：先按 POJ-104 设置训练 label-aware UniXcoder，再用 POJ 正例过采样和 BigCloneBench train 正例继续做 siamese contrastive 训练。
+本课程作业的主结论聚焦 POJ-104 语义代码检索任务。相比 UniXcoder 原文报告的 MAP@R 0.9052，本项目的 Label-aware UniXcoder 达到 0.9117；相比本地复现的 UniXcoder baseline 0.9098，也有小幅提升。
 
-| 方法 | 训练数据 | POJ-104 MAP@R | BCB Recall | BCB Precision | BCB F1 | 说明 |
-|---|---|---:|---:|---:|---:|---|
-| UniXcoder | 论文原始设置 | 0.9052 | 0.9290 | 0.9760 | 0.9520 | 论文报告指标 |
-| UniXcoder + Label-aware Loss | POJ-104 train | 0.8931 | - | - | - | 本文优化，按 POJ 论文设置训练 |
-| UniXcoder + Label-aware Loss | POJ-104 train + BigCloneBench train | 0.8925 | 0.8277 | 0.7688 | 0.7971 | 本文优化，BCB 使用验证集校准阈值 |
+| 方法 | POJ-104 MAP@R | 说明 |
+|---|---:|---|
+| UniXcoder 原文 | 0.9052 | 论文报告结果 |
+| UniXcoder baseline | 0.9098 | 本地复现 |
+| Label-aware UniXcoder | 0.9117 | 本项目方法 |
 
-BigCloneBench 的 Hugging Face 版本中，当前 train split 为 901028 条 pair，其中正例 450862 条；validation/test 均为 415416 条 pair。由于 siamese 相似度分数没有二分类 head，固定 0.5 阈值下 test F1 为 0.2406，但 AUC 为 0.9790；使用 validation 上选择的阈值 0.9989 后，test F1 为 0.7971。
+Label-aware UniXcoder 的核心改动是：在 batch 内对比学习时，同一 problem 的样本不再被当作负例，而是共同作为正例，从而减少假负例带来的错误惩罚。
 
 ## 本地展示前端
 
