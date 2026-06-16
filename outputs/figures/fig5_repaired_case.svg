@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="650" viewBox="0 0 1180 650">
+<rect width="1180" height="650" fill="#ffffff"/>
+<text x="52" y="52" font-size="28" font-weight="800" fill="#18212f" text-anchor="start" font-family="Inter, Arial, sans-serif">Representative retrieval error repaired by SupCon CE</text><text x="52" y="82" font-size="14" font-weight="500" fill="#657184" text-anchor="start" font-family="Inter, Arial, sans-serif">Query test_7943: the first same-problem candidate moves from rank 1083 to rank 1.</text>
+<rect x="70" y="178" width="250" height="100" rx="14" fill="#f9fbfc" stroke="#dce4ec"/>
+<text x="90" y="212" font-size="17" font-weight="800" fill="#18212f" text-anchor="start" font-family="Inter, Arial, sans-serif">Query</text>
+<text x="90" y="241" font-size="13" font-weight="600" fill="#657184" text-anchor="start" font-family="Inter, Arial, sans-serif">test_7943 / problem_96</text>
+<rect x="445" y="122" width="300" height="130" rx="14" fill="#fff7f4" stroke="#b64e43"/>
+<text x="465" y="156" font-size="17" font-weight="800" fill="#18212f" text-anchor="start" font-family="Inter, Arial, sans-serif">UniXcoder baseline</text>
+<text x="465" y="185" font-size="13" font-weight="600" fill="#657184" text-anchor="start" font-family="Inter, Arial, sans-serif">top-1: test_5720 / problem_92</text>
+<rect x="445" y="354" width="300" height="130" rx="14" fill="#eef6f4" stroke="#147765"/>
+<text x="465" y="388" font-size="17" font-weight="800" fill="#18212f" text-anchor="start" font-family="Inter, Arial, sans-serif">SupCon CE</text>
+<text x="465" y="417" font-size="13" font-weight="600" fill="#657184" text-anchor="start" font-family="Inter, Arial, sans-serif">top-1: test_7600 / problem_96</text>
+<line x1="330" y1="226" x2="430" y2="184" stroke="#b64e43" stroke-width="2"/><path d="M 430 184 L 423.76533724121 191.81850243231762 L 420.05235439367027 182.9780670810327 Z" fill="#b64e43" stroke="#b64e43" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="330" y1="250" x2="430" y2="418" stroke="#147765" stroke-width="2"/><path d="M 430 418 L 421.39163730052616 412.9111797404204 L 429.63097637906384 408.00681124129085 Z" fill="#147765" stroke="#147765" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="810" y="174" font-size="18" font-weight="800" fill="#b64e43" text-anchor="start" font-family="Inter, Arial, sans-serif">wrong problem</text>
+<text x="810" y="214" font-size="15" font-weight="700" fill="#657184" text-anchor="start" font-family="Inter, Arial, sans-serif">first positive rank: 1083</text>
+<text x="810" y="406" font-size="18" font-weight="800" fill="#147765" text-anchor="start" font-family="Inter, Arial, sans-serif">same problem</text>
+<text x="810" y="446" font-size="15" font-weight="700" fill="#657184" text-anchor="start" font-family="Inter, Arial, sans-serif">first positive rank: 1</text>
+<rect x="70" y="548" width="1040" height="46" rx="10" fill="#f8fafb" stroke="#dce4ec"/>
+<text x="92" y="578" font-size="16" font-weight="700" fill="#18212f" text-anchor="start" font-family="Inter, Arial, sans-serif">Interpretation: supervised positives reshape the embedding neighborhood, reducing template-level semantic confusion.</text>
+</svg>
