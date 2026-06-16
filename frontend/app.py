@@ -63,6 +63,13 @@ METHODS = [
     },
 ]
 
+INFERENCE_MODELS = [
+    {"name": "CodeBERT", "checkpoint": "codebert_cls"},
+    {"name": "GraphCodeBERT", "checkpoint": "graphcodebert_cls"},
+    {"name": "GraphCodeBERT + Hard Negatives", "checkpoint": "graphcodebert_hard_negatives"},
+    {"name": "UniXcoder", "checkpoint": "unixcoder_retrieval"},
+]
+
 MODEL_CACHE: dict[str, tuple[object, object, object]] = {}
 
 
@@ -93,17 +100,23 @@ def local_checkpoint_root() -> Path:
     return Path(os.environ.get("SEMANTIC_REUSE_CKPT_ROOT", str(DEFAULT_CKPT_ROOT))).expanduser()
 
 
+def checkpoint_file_state(path: Path) -> tuple[bool, bool]:
+    if not path.exists() or not path.is_dir():
+        return False, False
+    files = {p.name for p in path.iterdir()}
+    has_config = "config.json" in files
+    has_weights = any(name in files for name in ("model.safetensors", "pytorch_model.bin"))
+    return has_config, has_weights
+
+
 def checkpoint_status() -> list[dict]:
     root = local_checkpoint_root()
     rows = []
-    for method in METHODS:
-        checkpoint = method.get("checkpoint")
-        if not checkpoint:
-            continue
+    for method in INFERENCE_MODELS:
+        checkpoint = method["checkpoint"]
         path = root / checkpoint
         files = sorted(p.name for p in path.iterdir()) if path.exists() and path.is_dir() else []
-        has_config = "config.json" in files
-        has_weights = any(name in files for name in ("model.safetensors", "pytorch_model.bin"))
+        has_config, has_weights = checkpoint_file_state(path)
         rows.append(
             {
                 "name": method["name"],
@@ -163,7 +176,12 @@ def load_cross_encoder(checkpoint: Path):
     if key in MODEL_CACHE:
         return MODEL_CACHE[key]
     if not checkpoint.exists():
-        raise FileNotFoundError(f"Checkpoint not found: {checkpoint}")
+        raise FileNotFoundError(f"未找到模型目录：{checkpoint}")
+    has_config, has_weights = checkpoint_file_state(checkpoint)
+    if not has_config or not has_weights:
+        raise FileNotFoundError(
+            f"模型目录不完整：{checkpoint}。需要至少包含 config.json 和 model.safetensors 或 pytorch_model.bin。"
+        )
 
     try:
         import torch
@@ -670,8 +688,12 @@ main {
   z-index: 1;
   display: block;
   margin: 16px 0 8px;
-  font-size: clamp(22px, 2.3vw, 31px);
-  line-height: 1.06;
+  max-width: 100%;
+  font-size: clamp(18px, 2vw, 31px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .accent-blue { border-top-color: var(--blue); }
@@ -1270,6 +1292,25 @@ const metricValue = (method) => {
   return { label: "指标", value: null };
 };
 
+const hasLiveBackend = () => window.location.protocol === "http:" || window.location.protocol === "https:";
+
+const backendBootHint = "请使用 `python frontend\\\\app.py --port 8501` 启动本地服务，并在浏览器打开 `http://127.0.0.1:8501`。";
+
+const checkpointById = (modelId) => {
+  if (!state.summary?.checkpoints) return null;
+  return state.summary.checkpoints.find((item) => item.checkpoint === modelId) || null;
+};
+
+const inferErrorText = (response, data) => {
+  if (data?.error || data?.hint) {
+    return `${data.error || "推理失败。"}\n${data.hint || ""}`.trim();
+  }
+  if (!response.ok) {
+    return `推理接口返回错误（HTTP ${response.status}）。`;
+  }
+  return "推理失败，请稍后重试。";
+};
+
 const ERROR_SUMMARY = [
   ["高词法相似负例", "不同题目的程序可能共享高度相似的循环、数组和输入输出模板，词法方法容易误判。"],
   ["低词法相似正例", "同一题目的代码可以使用完全不同的变量组织、分支结构和实现风格。"],
@@ -1478,6 +1519,16 @@ const renderErrors = (summary) => {
 const runInfer = async () => {
   const button = document.getElementById("runInfer");
   const result = document.getElementById("inferResult");
+  const modelId = document.getElementById("modelSelect").value;
+  const checkpoint = checkpointById(modelId);
+  if (!hasLiveBackend()) {
+    result.textContent = `当前打开的是静态预览页面，无法调用本地推理接口。\n${backendBootHint}`;
+    return;
+  }
+  if (checkpoint && !checkpoint.looks_ready) {
+    result.textContent = `当前模型尚未同步到本地：${checkpoint.local_path}\n请补齐 config.json 和模型权重文件（model.safetensors 或 pytorch_model.bin）后再运行推理。`;
+    return;
+  }
   button.disabled = true;
   result.textContent = "模型加载中，首次推理可能会慢一些。";
   try {
@@ -1485,19 +1536,25 @@ const runInfer = async () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: document.getElementById("modelSelect").value,
+        model: modelId,
         code1: document.getElementById("code1").value,
         code2: document.getElementById("code2").value
       })
     });
-    const data = await response.json();
-    if (!data.ok) {
-      result.textContent = `${data.error}\\n${data.hint || ""}`.trim();
+    let data = null;
+    try {
+      data = await response.json();
+    } catch (error) {
+      data = null;
+    }
+    if (!response.ok || !data?.ok) {
+      result.textContent = inferErrorText(response, data);
       return;
     }
     result.textContent = `预测结果：${data.label}\\n语义等价概率：${data.semantic_equivalence_score.toFixed(4)}\\n运行设备：${data.device}\\n模型路径：${data.checkpoint}`;
   } catch (error) {
-    result.textContent = String(error);
+    const message = error instanceof Error ? error.message : String(error);
+    result.textContent = `无法连接推理接口。\n${backendBootHint}\n原始错误：${message}`;
   } finally {
     button.disabled = false;
   }
